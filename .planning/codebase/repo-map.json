@@ -1,0 +1,262 @@
+{
+  "root": "/home/qualiasolutions/Projects/demos/costas",
+  "total_files": 16,
+  "total_symbols": 35,
+  "files": [
+    {
+      "file": "src/lib/data.ts",
+      "symbols": [
+        {
+          "kind": "type",
+          "name": "NavKey",
+          "line": 5
+        },
+        {
+          "kind": "type",
+          "name": "NavItem",
+          "line": 6
+        },
+        {
+          "kind": "const",
+          "name": "navItems",
+          "line": 8
+        },
+        {
+          "kind": "const",
+          "name": "car",
+          "line": 14
+        },
+        {
+          "kind": "const",
+          "name": "workshop",
+          "line": 19
+        },
+        {
+          "kind": "type",
+          "name": "LogEntry",
+          "line": 23
+        },
+        {
+          "kind": "type",
+          "name": "WorkLog",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "file": "src/lib/i18n.ts",
+      "symbols": [
+        {
+          "kind": "type",
+          "name": "Lang",
+          "line": 2
+        },
+        {
+          "kind": "type",
+          "name": "SeedEntry",
+          "line": 4
+        },
+        {
+          "kind": "type",
+          "name": "MechSeedEntry",
+          "line": 5
+        },
+        {
+          "kind": "type",
+          "name": "Translation",
+          "line": 7
+        },
+        {
+          "kind": "const",
+          "name": "translations",
+          "line": 55
+        }
+      ]
+    },
+    {
+      "file": "src/components/MechanicLog.tsx",
+      "symbols": [
+        {
+          "kind": "fn",
+          "name": "todayISO",
+          "line": 11
+        },
+        {
+          "kind": "fn",
+          "name": "formatDate",
+          "line": 15
+        },
+        {
+          "kind": "fn",
+          "name": "MechanicLog",
+          "line": 20
+        }
+      ]
+    },
+    {
+      "file": "src/components/ServiceLog.tsx",
+      "symbols": [
+        {
+          "kind": "fn",
+          "name": "todayISO",
+          "line": 9
+        },
+        {
+          "kind": "fn",
+          "name": "formatDate",
+          "line": 13
+        },
+        {
+          "kind": "fn",
+          "name": "ServiceLog",
+          "line": 18
+        }
+      ]
+    },
+    {
+      "file": "src/app/layout.tsx",
+      "symbols": [
+        {
+          "kind": "const",
+          "name": "metadata",
+          "line": 16
+        },
+        {
+          "kind": "fn",
+          "name": "RootLayout",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "file": "src/app/mechanic/page.tsx",
+      "symbols": [
+        {
+          "kind": "const",
+          "name": "metadata",
+          "line": 3
+        },
+        {
+          "kind": "fn",
+          "name": "MechanicPage",
+          "line": 7
+        }
+      ]
+    },
+    {
+      "file": "src/app/register/page.tsx",
+      "symbols": [
+        {
+          "kind": "const",
+          "name": "metadata",
+          "line": 3
+        },
+        {
+          "kind": "fn",
+          "name": "RegisterPage",
+          "line": 7
+        }
+      ]
+    },
+    {
+      "file": "src/components/LanguageProvider.tsx",
+      "symbols": [
+        {
+          "kind": "fn",
+          "name": "LanguageProvider",
+          "line": 10
+        },
+        {
+          "kind": "fn",
+          "name": "useLang",
+          "line": 35
+        }
+      ]
+    },
+    {
+      "file": "src/components/RegisterForm.tsx",
+      "symbols": [
+        {
+          "kind": "fn",
+          "name": "fileSize",
+          "line": 9
+        },
+        {
+          "kind": "fn",
+          "name": "RegisterForm",
+          "line": 15
+        }
+      ]
+    },
+    {
+      "file": "src/app/page.tsx",
+      "symbols": [
+        {
+          "kind": "fn",
+          "name": "Home",
+          "line": 4
+        }
+      ]
+    },
+    {
+      "file": "src/components/AppShell.tsx",
+      "symbols": [
+        {
+          "kind": "fn",
+          "name": "AppShell",
+          "line": 10
+        }
+      ]
+    },
+    {
+      "file": "src/components/icons.tsx",
+      "symbols": [
+        {
+          "kind": "fn",
+          "name": "Icon",
+          "line": 11
+        }
+      ]
+    },
+    {
+      "file": "src/components/LanguageToggle.tsx",
+      "symbols": [
+        {
+          "kind": "fn",
+          "name": "LanguageToggle",
+          "line": 11
+        }
+      ]
+    },
+    {
+      "file": "src/components/ServiceSelect.tsx",
+      "symbols": [
+        {
+          "kind": "fn",
+          "name": "ServiceSelect",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "file": "src/components/Sidebar.tsx",
+      "symbols": [
+        {
+          "kind": "fn",
+          "name": "Sidebar",
+          "line": 7
+        }
+      ]
+    },
+    {
+      "file": "src/components/Topbar.tsx",
+      "symbols": [
+        {
+          "kind": "fn",
+          "name": "Topbar",
+          "line": 9
+        }
+      ]
+    }
+  ]
+}

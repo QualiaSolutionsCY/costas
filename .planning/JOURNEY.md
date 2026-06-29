@@ -1,7 +1,7 @@
 ---
 project: "Costas — Car Service Log"
 total_milestones: 6
-current_milestone: 2
+current_milestone: 6
 created: 2026-06-29
 project_type: full
 ---
@@ -20,9 +20,11 @@ Turn the shipped bilingual car-service-log demo into a production platform for t
 
 ```
 M1 (Make It Real) ─── M2 (Verification & Trust) ─── M3 (Accounts & Settings)
-   [COMPLETE]               [CURRENT]
+   [COMPLETE]              [COMPLETE]                    [COMPLETE]
                    ─── M4 (Booking & Scheduling) ─── M5 (Reminders & Notifications)
+                          [COMPLETE]                       [COMPLETE]
                    ─── M6 (Handoff)
+                          [CURRENT]
 ```
 
 ---

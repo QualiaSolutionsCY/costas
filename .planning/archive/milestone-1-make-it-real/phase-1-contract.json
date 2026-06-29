@@ -1,0 +1,201 @@
+{
+  "version": 1,
+  "phase": 1,
+  "goal": "The app talks to a real Supabase project with RLS on from the first migration, and a user can sign in as an owner or a mechanic.",
+  "why": "Every later flow (owner log, mechanic job, workshop registration) reads from and writes to this backend. Without a real Supabase client, an RLS-protected schema, and role-aware auth, the demo is still a mockup.",
+  "generated_at": "2026-06-29T10:40:31Z",
+  "generated_by": "planner",
+  "source_plan_hash": "sha256:4addcba541a6bea0629622fc23a4ad32d4dfb7a50c01c875feb8e87e06a4283a",
+  "success_criteria": [
+    "A user can sign in and sign out with email + password; refresh keeps them logged in (AUTH-01, AUTH-03).",
+    "A signed-in user is owner or mechanic per app_metadata.role (server-set) and lands on the matching surface (AUTH-02).",
+    "Seeded owner@costas.demo + mechanic@costas.demo accounts exist with auto-confirm on (AUTH-04).",
+    "profiles, vehicles, service_entries, workshops exist via migration with RLS enabled and policies on auth.uid() / app_metadata.role; a private workshop-certs bucket exists with INSERT+SELECT+UPDATE policies (DATA-01).",
+    "Signing in as the seeded owner vs mechanic shows only entitled rows — RLS verified with two users (DATA-02).",
+    "EL/EN preserved: every new auth string is in both languages (a missing translation is a build error)."
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Supabase clients + middleware session refresh + env wiring",
+      "wave": 1,
+      "depends_on": [],
+      "persona": "backend",
+      "files_modify": [
+        "package.json"
+      ],
+      "files_create": [
+        "src/lib/supabase/client.ts",
+        "src/lib/supabase/server.ts",
+        "src/lib/supabase/middleware.ts",
+        "src/middleware.ts",
+        ".env.local",
+        ".env.example"
+      ],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "src/lib/supabase/server.ts exports an async createClient() (cookies() is async in Next 16) and a separate createServiceClient() using SUPABASE_SERVICE_ROLE_KEY guarded by import server-only.",
+        "src/lib/supabase/client.ts exports a createClient() browser factory using NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.",
+        "A request to any route refreshes the session cookie via middleware.ts -> updateSession; a logged-in user stays logged in after refresh.",
+        "npx tsc --noEmit passes; SUPABASE_SERVICE_ROLE_KEY appears in no file reachable from a use client component."
+      ],
+      "action": "npm i @supabase/ssr @supabase/supabase-js server-only. client.ts: createBrowserClient. server.ts: async createClient awaiting cookies() with getAll/setAll only, plus createServiceClient (service-role) with import server-only at top. middleware.ts: updateSession with NextResponse.next, server client reading request.cookies + writing request+response, then await getClaims() with NO code between create and auth call. Root middleware.ts + config.matcher. .env.local + .env.example.",
+      "context_files": [
+        ".planning/research/ARCHITECTURE.md",
+        ".planning/research/STACK.md",
+        ".planning/env.required.json",
+        ".planning/codebase/concerns.md",
+        "rules/security.md",
+        "rules/infrastructure.md"
+      ],
+      "verification": [
+        {
+          "type": "file-exists",
+          "path": "src/lib/supabase/server.ts",
+          "pattern": "createClient",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/supabase/server.ts",
+          "pattern": "await cookies()",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/supabase/server.ts",
+          "pattern": "getAll",
+          "expect": "present"
+        },
+        {
+          "type": "file-exists",
+          "path": "src/middleware.ts",
+          "pattern": "updateSession",
+          "expect": "present"
+        }
+      ]
+    },
+    {
+      "id": "T2",
+      "title": "Migration: schema + RLS on every table + workshop-certs Storage bucket",
+      "wave": 1,
+      "depends_on": [],
+      "persona": "security",
+      "files_modify": [],
+      "files_create": [
+        "supabase/migrations/init_schema.sql",
+        "supabase/config.toml",
+        "src/lib/supabase/database.types.ts"
+      ],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "All four tables (profiles, vehicles, service_entries, workshops) exist with ENABLE ROW LEVEL SECURITY and explicit policies; service_entries.kind constrained to owner_log | workshop_job.",
+        "Owner SELECT/INSERT policies scope to owner_id = auth.uid(); mechanic INSERT on service_entries gated by auth.jwt()->app_metadata->>role = mechanic.",
+        "A private bucket workshop-certs exists with INSERT + SELECT + UPDATE policies on storage.objects keyed to (storage.foldername(name))[1] = auth.jwt()->>sub.",
+        "npx supabase db reset applies the migration cleanly with no SQL errors; database.types.ts regenerates and npx tsc --noEmit still passes."
+      ],
+      "action": "npx supabase init (config.toml auto-confirm ON). migration new init_schema: DDL for profiles, vehicles, service_entries (kind check owner_log|workshop_job, place), workshops (cert_serial, cert_path, verified). ENABLE ROW LEVEL SECURITY on all four + policies per ARCHITECTURE.md (every UPDATE has matching SELECT). Private workshop-certs bucket + INSERT/SELECT/UPDATE storage.objects policies. handle_new_user() trigger. db reset; gen types --local > database.types.ts.",
+      "context_files": [
+        ".planning/research/ARCHITECTURE.md",
+        ".planning/CONTEXT.md",
+        "rules/security.md",
+        "rules/constitution.md"
+      ],
+      "verification": [
+        {
+          "type": "grep-match",
+          "path": "supabase/migrations/0001_init_schema.sql",
+          "pattern": "enable row level security",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "supabase/migrations/0001_init_schema.sql",
+          "pattern": "app_metadata",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "supabase/migrations/0001_init_schema.sql",
+          "pattern": "workshop-certs",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "supabase/migrations/0001_init_schema.sql",
+          "pattern": "user_metadata' ->> 'role'",
+          "expect": "absent"
+        }
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Email/password auth: login/logout, role routing, seeded accounts, bilingual strings",
+      "wave": 2,
+      "depends_on": [
+        "T1",
+        "T2"
+      ],
+      "persona": "backend",
+      "files_modify": [
+        "src/app/page.tsx",
+        "src/app/mechanic/page.tsx",
+        "src/lib/i18n.ts"
+      ],
+      "files_create": [
+        "src/app/login/page.tsx",
+        "src/app/login/actions.ts",
+        "src/components/LoginForm.tsx",
+        "src/app/auth/confirm/route.ts",
+        "src/lib/auth.ts",
+        "supabase/seed.sql"
+      ],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "Visiting / or /mechanic while signed out redirects to /login. The login form is bilingual (EL default) using existing token classes — no raw hex, no native select.",
+        "Signing in as owner@costas.demo lands on / (owner surface); mechanic@costas.demo lands on /mechanic. Owner hitting /mechanic redirects to /, mechanic hitting / redirects to /mechanic.",
+        "After sign-in, refreshing keeps the user logged in (AUTH-01/03). Sign-out clears the session and returns to /login.",
+        "Both seeded accounts exist with app_metadata.role stamped; the seeded owner sees the demo vehicle's service_entries and the mechanic sees only the job they logged (DATA-02)."
+      ],
+      "action": "Add auth strings to Translation in BOTH el+en. lib/auth.ts getSessionRole() from getClaims app_metadata.role. login/actions.ts (use server): signIn Zod-validate then signInWithPassword then redirect by role; signOut. LoginForm.tsx (use client) form action=signIn, DESIGN tokens, useActionState, useLang. auth/confirm/route.ts callback. Gate page.tsx + mechanic/page.tsx by role; sign-out in Topbar. seed.sql: two role-stamped accounts + demo vehicle + owner_log + workshop_job.",
+      "context_files": [
+        ".planning/research/STACK.md",
+        ".planning/research/ARCHITECTURE.md",
+        ".planning/DESIGN.md",
+        ".planning/PRODUCT.md",
+        "src/lib/i18n.ts",
+        "src/components/LanguageProvider.tsx",
+        "src/app/page.tsx",
+        "src/app/mechanic/page.tsx",
+        "src/components/AppShell.tsx",
+        "rules/security.md"
+      ],
+      "verification": [
+        {
+          "type": "grep-match",
+          "path": "src/lib/auth-actions.ts",
+          "pattern": "signInWithPassword",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/auth-actions.ts",
+          "pattern": "redirect",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/i18n.ts",
+          "pattern": "signInBtn",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "supabase/seed.sql",
+          "pattern": "app_meta",
+          "expect": "present"
+        }
+      ]
+    }
+  ]
+}

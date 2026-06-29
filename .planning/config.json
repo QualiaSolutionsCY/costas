@@ -1,7 +1,7 @@
 {
   "mode": "interactive",
   "depth": "standard",
-  "project_type": "demo",
+  "project_type": "full",
   "template_type": "website",
   "stack_id": "full-app",
   "brownfield": true,

@@ -1,5 +1,5 @@
 ---
-project_type: demo
+project_type: full
 ---
 
 # Costas — Car Service Log

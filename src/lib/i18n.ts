@@ -70,6 +70,23 @@ export type Translation = {
   signOut: string;
   loginError: string;
   demoHint: string;
+  // auth lifecycle: signup + forgot password
+  signUpTitle: string;
+  signUpSubtitle: string;
+  signUpBtn: string;
+  signingUp: string;
+  confirmPasswordLabel: string;
+  errPwMismatch: string;
+  errEmailExists: string;
+  haveAccount: string;
+  noAccount: string;
+  signUpLink: string;
+  forgotPassword: string;
+  forgotTitle: string;
+  forgotSubtitle: string;
+  sendResetBtn: string;
+  resetSent: string;
+  resetSentSub: string;
   // flow states / errors
   placeLabel: string;
   errService: string;
@@ -236,6 +253,22 @@ export const translations: Record<Lang, Translation> = {
     signOut: "Αποσύνδεση",
     loginError: "Λάθος email ή κωδικός.",
     demoHint: "Demo · owner@costas.demo ή mechanic@costas.demo · costas123",
+    signUpTitle: "Εγγραφή",
+    signUpSubtitle: "Δημιούργησε λογαριασμό οδηγού.",
+    signUpBtn: "Εγγραφή",
+    signingUp: "Εγγραφή…",
+    confirmPasswordLabel: "Επιβεβαίωση κωδικού",
+    errPwMismatch: "Οι κωδικοί δεν ταιριάζουν.",
+    errEmailExists: "Το email χρησιμοποιείται ήδη.",
+    haveAccount: "Έχεις λογαριασμό;",
+    noAccount: "Δεν έχεις λογαριασμό;",
+    signUpLink: "Εγγραφή",
+    forgotPassword: "Ξέχασα τον κωδικό",
+    forgotTitle: "Επαναφορά κωδικού",
+    forgotSubtitle: "Στείλε σύνδεσμο επαναφοράς στο email σου.",
+    sendResetBtn: "Αποστολή συνδέσμου",
+    resetSent: "Έλεγξε τα εισερχόμενά σου",
+    resetSentSub: "Σου στείλαμε σύνδεσμο επαναφοράς κωδικού.",
     placeLabel: "Πού έγινε;",
     errService: "Διάλεξε υπηρεσία.",
     errPlate: "Πρόσθεσε πινακίδα πριν αποθηκεύσεις.",
@@ -391,6 +424,22 @@ export const translations: Record<Lang, Translation> = {
     signOut: "Sign out",
     loginError: "Wrong email or password.",
     demoHint: "Demo · owner@costas.demo or mechanic@costas.demo · costas123",
+    signUpTitle: "Sign up",
+    signUpSubtitle: "Create an owner account.",
+    signUpBtn: "Sign up",
+    signingUp: "Signing up…",
+    confirmPasswordLabel: "Confirm password",
+    errPwMismatch: "Passwords don't match.",
+    errEmailExists: "That email is already registered.",
+    haveAccount: "Have an account?",
+    noAccount: "No account yet?",
+    signUpLink: "Sign up",
+    forgotPassword: "Forgot password",
+    forgotTitle: "Reset password",
+    forgotSubtitle: "Send a reset link to your email.",
+    sendResetBtn: "Send reset link",
+    resetSent: "Check your inbox",
+    resetSentSub: "We've sent you a password reset link.",
     placeLabel: "Where?",
     errService: "Pick a service.",
     errPlate: "Add a plate before saving.",

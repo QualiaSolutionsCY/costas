@@ -70,6 +70,20 @@ export default function LoginPage() {
           </button>
         </form>
 
+        <div className="mt-4 space-y-1.5 text-center text-xs text-muted">
+          <p>
+            {t.noAccount}{" "}
+            <a href="/signup" className="font-medium text-accent hover:opacity-80">
+              {t.signUpLink}
+            </a>
+          </p>
+          <p>
+            <a href="/forgot-password" className="font-medium text-accent hover:opacity-80">
+              {t.forgotPassword}
+            </a>
+          </p>
+        </div>
+
         <p className="mt-4 text-center text-xs text-muted">{t.demoHint}</p>
       </div>
     </main>

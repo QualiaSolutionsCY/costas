@@ -1,0 +1,125 @@
+{
+  "ok": true,
+  "phase": 2,
+  "goal": "Admin approves/rejects a workshop (persists with timestamp/reason); approved workshops show a certified badge on every workshop surface; pending/rejected visually distinguished.",
+  "checked": 14,
+  "failed": 0,
+  "generated_at": "2026-06-29T13:00:43.500Z",
+  "results": [
+    {
+      "task_id": "T1",
+      "task_title": "Admin approve/reject server actions + badge i18n keys",
+      "index": 0,
+      "type": "file-exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T1",
+      "task_title": "Admin approve/reject server actions + badge i18n keys",
+      "index": 1,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T1",
+      "task_title": "Admin approve/reject server actions + badge i18n keys",
+      "index": 2,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T1",
+      "task_title": "Admin approve/reject server actions + badge i18n keys",
+      "index": 3,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T1",
+      "task_title": "Admin approve/reject server actions + badge i18n keys",
+      "index": 4,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T2",
+      "task_title": "WorkshopBadge component + verified-names helper",
+      "index": 0,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T2",
+      "task_title": "WorkshopBadge component + verified-names helper",
+      "index": 1,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T2",
+      "task_title": "WorkshopBadge component + verified-names helper",
+      "index": 2,
+      "type": "command-exit",
+      "ok": true,
+      "detail": "",
+      "duration_ms": 1569,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Wire approve/reject into AdminReviewList; propagate badge to mechanic + owner surfaces",
+      "index": 0,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Wire approve/reject into AdminReviewList; propagate badge to mechanic + owner surfaces",
+      "index": 1,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Wire approve/reject into AdminReviewList; propagate badge to mechanic + owner surfaces",
+      "index": 2,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Wire approve/reject into AdminReviewList; propagate badge to mechanic + owner surfaces",
+      "index": 3,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Wire approve/reject into AdminReviewList; propagate badge to mechanic + owner surfaces",
+      "index": 4,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Wire approve/reject into AdminReviewList; propagate badge to mechanic + owner surfaces",
+      "index": 5,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

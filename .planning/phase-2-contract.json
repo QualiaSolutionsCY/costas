@@ -1,0 +1,239 @@
+{
+  "version": 1,
+  "phase": 2,
+  "goal": "A signed-in owner can view/edit their profile (name, phone), perform full vehicle CRUD (add/edit/remove with confirmation), switch the active vehicle to scope the log, and reach all three from a real /settings page wired to the sidebar — bilingual, all states handled.",
+  "why": "Turns the seeded-account assumption into a real self-service account surface — the last gap before M3 (Accounts & Settings) can close. Covers ACCT-04..10.",
+  "generated_at": "2026-06-29T15:00:47Z",
+  "generated_by": "planner",
+  "source_plan_hash": "sha256:f1311a7f86699b72b0bb1ab406132cfea4021fa1bc067b780a7c3b46dc970668",
+  "success_criteria": [
+    "Clicking Settings opens a real /settings page with Profile / Vehicles / Security; signed-out shows a sign-in prompt, signed-in shows the user's data (ACCT-10).",
+    "Editing display name or phone and saving persists to profiles via profiles_update_own RLS and survives a hard refresh (ACCT-04, ACCT-05).",
+    "An owner can add, edit (model/plate/year inline), and remove (with a bilingual confirm dialog) vehicles; removed vehicles disappear (ACCT-06, ACCT-07, ACCT-08).",
+    "An owner with 2+ vehicles can switch the active vehicle; the log + history scope to it and the choice persists across a reload via ?v= (ACCT-09).",
+    "The Security section changes the password via the existing changePassword action with bilingual success/error.",
+    "npx tsc --noEmit exits 0; no TODO/FIXME/placeholder in touched files; every new i18n key present in both el and en."
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Migration 0008 + profile & vehicle data seam",
+      "wave": 1,
+      "depends_on": [],
+      "persona": "backend",
+      "files_modify": [
+        "src/lib/owner-actions.ts"
+      ],
+      "files_create": [
+        "supabase/migrations/0008_profile_vehicle_fields.sql",
+        "src/lib/profile-actions.ts"
+      ],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "0008 adds profiles.phone (text, nullable), vehicles.year (int, nullable), and a demo-permissive vehicles delete RLS policy matching 0005's using(true) style.",
+        "getProfile() returns the current user's {full_name, phone} or null when signed out; updateProfile Zod-validates name (1..80) + optional phone (max 20) and writes via profiles_update_own.",
+        "updateVehicle Zod-validates {id, model, plate(normalized), year? 1900..2030} and updates; removeVehicle validates {id} and deletes; both revalidate / and /settings.",
+        "getVehicles() selects and returns year on each OwnerVehicle."
+      ],
+      "action": "Write 0008 migration: add column if not exists phone/year + create policy demo_vehicles_delete for delete using(true). In owner-actions.ts add year to OwnerVehicle + getVehicles select, add vehicleEditSchema + vehicleRemoveSchema, add updateVehicle and removeVehicle actions ({ok,error} shape, revalidate / and /settings). Create profile-actions.ts: getProfile() (getUser-gated maybeSingle) and updateProfile() (Zod name+phone, session-required, update by id=user.id, revalidate /settings).",
+      "context_files": [
+        "src/lib/owner-actions.ts",
+        "src/lib/session.ts",
+        "src/lib/plate.ts",
+        "supabase/migrations/0001_init_schema.sql",
+        "supabase/migrations/0004_demo_no_login_public_access.sql",
+        "supabase/migrations/0005_demo_public_all_roles.sql",
+        ".planning/PROJECT.md"
+      ],
+      "verification": [
+        {
+          "type": "grep-match",
+          "path": "supabase/migrations/0008_profile_vehicle_fields.sql",
+          "pattern": "add column if not exists phone|add column if not exists year|demo_vehicles_delete",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/owner-actions.ts",
+          "pattern": "export async function updateVehicle|export async function removeVehicle",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/profile-actions.ts",
+          "pattern": "export async function getProfile|export async function updateProfile",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/owner-actions.ts",
+          "pattern": "year",
+          "expect": "present"
+        }
+      ]
+    },
+    {
+      "id": "T2",
+      "title": "Bilingual i18n keys for settings, profile, vehicle CRUD",
+      "wave": 1,
+      "depends_on": [],
+      "persona": "frontend",
+      "files_modify": [
+        "src/lib/i18n.ts"
+      ],
+      "files_create": [],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "Translation type and both el + en dictionaries gain identical keys: profileSection, vehiclesSection, securitySection, settingsPageSubtitle, phoneLabel, phonePlaceholder, saveProfile, profileSaved, editVehicle, removeVehicle, confirmRemove, confirmRemoveHint, yearLabel, yearPlaceholder, changePassword, newPassword, confirmPassword, passwordChanged, settingsSignedOut, settingsSignedOutHint, saving.",
+        "npx tsc --noEmit exits 0, proving both dictionaries satisfy the type.",
+        "Greek values are real translations matching the existing register; reuse existing nameLabel for display name (do NOT add nameLabel2)."
+      ],
+      "action": "Add each new key to the Translation type as string, then add EL + EN values to both dictionaries. Reuse existing nameLabel for the profile display-name label (no duplicate). Greek primary, real translations.",
+      "context_files": [
+        "src/lib/i18n.ts"
+      ],
+      "verification": [
+        {
+          "type": "command-exit",
+          "command": "npx",
+          "args": [
+            "tsc",
+            "--noEmit"
+          ],
+          "expected_exit": 0
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/i18n.ts",
+          "pattern": "securitySection|profileSection|confirmRemove|passwordChanged|settingsSignedOut",
+          "expect": "present"
+        }
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Real /settings route: Profile, Vehicles, Security panels + sidebar wiring",
+      "wave": 2,
+      "depends_on": [
+        "T1",
+        "T2"
+      ],
+      "persona": "frontend",
+      "files_modify": [
+        "src/components/AppShell.tsx",
+        "src/components/Sidebar.tsx"
+      ],
+      "files_create": [
+        "src/app/settings/page.tsx",
+        "src/components/SettingsClient.tsx"
+      ],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "Clicking Settings in the sidebar navigates to /settings (real route, /admin server-component pattern), not the inline language-only panel.",
+        "Signed-out renders a bilingual sign-in prompt (t.settingsSignedOut + Link to /login); signed-in renders Profile / Vehicles / Security with the user's data.",
+        "Profile save calls updateProfile, shows t.profileSaved, persists after a hard refresh.",
+        "Vehicles section: each row shows model+plate+year with Edit (inline pre-filled form -> updateVehicle) and Remove (bilingual confirm dialog -> removeVehicle, row disappears).",
+        "Security section: two-field form calls existing changePassword; ok shows t.passwordChanged; mismatch/error shows bilingual error.",
+        "Every control keyboard-accessible with labels; loading/error/empty/confirm states present."
+      ],
+      "action": "Create src/app/settings/page.tsx (server: getProfile + getVehicles, /admin-style container, pass to SettingsClient). Create SettingsClient.tsx ('use client'): three sections using existing card/input/button patterns, useActionState for updateProfile/updateVehicle/removeVehicle/changePassword; remove-confirm overlay; Icon glyphs only; text via t.*; signed-out -> settingsSignedOut card linking /login. In AppShell.tsx route settings nav to /settings via useRouter; delete the dead inline panel.",
+      "context_files": [
+        "src/components/AppShell.tsx",
+        "src/components/Sidebar.tsx",
+        "src/app/admin/page.tsx",
+        "src/lib/account-actions.ts",
+        "src/components/ServiceLog.tsx",
+        ".planning/DESIGN.md",
+        "src/lib/i18n.ts"
+      ],
+      "verification": [
+        {
+          "type": "file-exists",
+          "path": "src/app/settings/page.tsx",
+          "expect": "present"
+        },
+        {
+          "type": "file-exists",
+          "path": "src/components/SettingsClient.tsx",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/components/SettingsClient.tsx",
+          "pattern": "updateProfile|updateVehicle|removeVehicle|changePassword",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/components/AppShell.tsx",
+          "pattern": "/settings|useRouter",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/components/SettingsClient.tsx",
+          "pattern": "confirmRemove|settingsSignedOut",
+          "expect": "present"
+        }
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "Active-vehicle switcher scoped by ?v= searchParam",
+      "wave": 2,
+      "depends_on": [
+        "T1"
+      ],
+      "persona": "frontend",
+      "files_modify": [
+        "src/app/page.tsx",
+        "src/components/ServiceLog.tsx",
+        "src/components/AppShell.tsx"
+      ],
+      "files_create": [],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "page.tsx reads searchParams (?v={id}); when present and valid it hydrates getEntries(v) and passes activeVehicleId to ServiceLog; absent defaults to newest vehicle.",
+        "Switching the vehicle via the existing pill switcher updates the URL to ?v={id} and swaps history; the active vehicle persists across a hard reload.",
+        "The vehicle hero shows year when present (e.g. 'VW Golf · 2019'); absence renders cleanly with no 'null'."
+      ],
+      "action": "In page.tsx use Next 16 async searchParams (Promise) to compute a validated activeId (fallback newest), hydrate entries, pass activeVehicleId to ServiceLog. In ServiceLog.tsx add activeVehicleId prop, init selectedId from it, push /?v={id} via useRouter on switchVehicle (keep getEntries transition), render selectedVehicle.year in the hero when truthy. Verify AppShell needs no change before editing it.",
+      "context_files": [
+        "src/app/page.tsx",
+        "src/components/ServiceLog.tsx",
+        "src/components/AppShell.tsx",
+        "src/lib/owner-actions.ts",
+        "AGENTS.md"
+      ],
+      "verification": [
+        {
+          "type": "command-exit",
+          "command": "npx",
+          "args": [
+            "tsc",
+            "--noEmit"
+          ],
+          "expected_exit": 0
+        },
+        {
+          "type": "grep-match",
+          "path": "src/app/page.tsx",
+          "pattern": "searchParams|activeVehicleId",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/components/ServiceLog.tsx",
+          "pattern": "router.push|activeVehicleId",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/components/ServiceLog.tsx",
+          "pattern": "\\.year",
+          "expect": "present"
+        }
+      ]
+    }
+  ]
+}

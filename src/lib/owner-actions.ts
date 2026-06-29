@@ -14,7 +14,12 @@ import { normalizePlate } from "@/lib/plate";
 // null. This is the only file that knows the `vehicles` / `service_entries`
 // table shapes for the owner flow.
 
-export type OwnerVehicle = { id: string; model: string | null; plate: string };
+export type OwnerVehicle = {
+  id: string;
+  model: string | null;
+  plate: string;
+  year: number | null;
+};
 
 export type OwnerEntry = {
   id: string;
@@ -30,7 +35,7 @@ export async function getVehicles(): Promise<OwnerVehicle[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("vehicles")
-    .select("id, model, plate")
+    .select("id, model, plate, year")
     .order("created_at", { ascending: false });
   return data ?? [];
 }
@@ -90,6 +95,79 @@ export async function addVehicle(
   if (error) return { ok: false, error: "save" };
 
   revalidatePath("/");
+  return { ok: true, error: null };
+}
+
+const vehicleEditSchema = z.object({
+  id: z.string().uuid(),
+  model: z.string().trim().min(1).max(80),
+  plate: z.string().trim().min(1).max(20).transform(normalizePlate),
+  year: z.coerce.number().int().min(1900).max(2030).optional(),
+});
+
+const vehicleRemoveSchema = z.object({ id: z.string().uuid() });
+
+/**
+ * Server Action for useActionState: validates and updates an existing vehicle's
+ * model/plate/year. revalidatePath('/') + revalidatePath('/settings') refresh
+ * the server-rendered lists. Returns {ok:true} on success,
+ * {ok:false,error:'save'} on any failure.
+ */
+export async function updateVehicle(
+  _prev: VehicleState,
+  formData: FormData,
+): Promise<VehicleState> {
+  const parsed = vehicleEditSchema.safeParse({
+    id: formData.get("id"),
+    model: formData.get("model"),
+    plate: formData.get("plate"),
+    year: formData.get("year") || undefined,
+  });
+
+  if (!parsed.success) return { ok: false, error: "save" };
+
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("vehicles")
+    .update({
+      model: parsed.data.model,
+      plate: parsed.data.plate,
+      year: parsed.data.year ?? null,
+    })
+    .eq("id", parsed.data.id);
+
+  if (error) return { ok: false, error: "save" };
+
+  revalidatePath("/");
+  revalidatePath("/settings");
+  return { ok: true, error: null };
+}
+
+/**
+ * Server Action for useActionState: deletes a vehicle by id. Relies on the
+ * demo-permissive `demo_vehicles_delete` policy. revalidatePath('/') +
+ * revalidatePath('/settings') refresh the server-rendered lists.
+ */
+export async function removeVehicle(
+  _prev: VehicleState,
+  formData: FormData,
+): Promise<VehicleState> {
+  const parsed = vehicleRemoveSchema.safeParse({ id: formData.get("id") });
+
+  if (!parsed.success) return { ok: false, error: "save" };
+
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("vehicles")
+    .delete()
+    .eq("id", parsed.data.id);
+
+  if (error) return { ok: false, error: "save" };
+
+  revalidatePath("/");
+  revalidatePath("/settings");
   return { ok: true, error: null };
 }
 

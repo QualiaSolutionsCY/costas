@@ -3,24 +3,38 @@ import { ServiceLog } from "@/components/ServiceLog";
 import { FirstVisitGate } from "@/components/FirstVisitGate";
 import { getVehicles, getEntries } from "@/lib/owner-actions";
 import { getVerifiedWorkshopNames } from "@/lib/workshop-status";
+import { getReminderBadgeCount } from "@/lib/reminders";
+
+// Reads request-time searchParams (?v={id}) to scope the active vehicle, so the
+// page must opt out of static rendering.
+export const dynamic = "force-dynamic";
 
 // No auth gate — the owner flow is anonymous. getVehicles() returns every
-// vehicle; we hydrate the first one's history server-side and let the client
-// swap on a vehicle switch.
-export default async function Home() {
+// vehicle; the ?v={id} searchParam picks the active one (server-side, no
+// localStorage — avoids a hydration mismatch). We hydrate that vehicle's
+// history server-side and let the client swap on a vehicle switch.
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ v?: string }>;
+}) {
+  const { v } = await searchParams;
   const vehicles = await getVehicles();
-  const firstId = vehicles[0]?.id ?? null;
-  const entries = firstId ? await getEntries(firstId) : [];
+  const activeId =
+    v && vehicles.some((x) => x.id === v) ? v : (vehicles[0]?.id ?? null);
+  const entries = activeId ? await getEntries(activeId) : [];
   const verified = await getVerifiedWorkshopNames();
+  const reminderCount = await getReminderBadgeCount(vehicles, { advanceDays: 30 });
 
   return (
     <>
       <FirstVisitGate />
-      <AppShell vehicles={vehicles}>
+      <AppShell vehicles={vehicles} reminderCount={reminderCount}>
         <ServiceLog
           vehicles={vehicles}
           initialEntries={entries}
           verifiedWorkshops={[...verified]}
+          activeVehicleId={activeId}
         />
       </AppShell>
     </>

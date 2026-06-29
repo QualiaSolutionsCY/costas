@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { Icon } from "./icons";
 import { useLang } from "./LanguageProvider";
-import { LanguageToggle } from "./LanguageToggle";
 import type { OwnerVehicle } from "@/lib/owner-actions";
 import type { NavKey } from "@/lib/data";
 import type { Translation } from "@/lib/i18n";
@@ -69,62 +68,28 @@ function VehiclesPanel({
   );
 }
 
-/** Honest Settings surface — language preference + about + optional sign in. */
-function SettingsPanel({ t }: { t: Translation }) {
-  return (
-    <div className="mx-auto max-w-2xl">
-      <div className="px-1">
-        <h2 className="text-base font-semibold tracking-tight">{t.nav.settings}</h2>
-        <p className="mt-0.5 text-xs text-muted">{t.settingsSubtitle}</p>
-      </div>
-      <div className="mt-4 divide-y rounded-xl border bg-surface">
-        <div className="flex items-center justify-between gap-3 p-4">
-          <div className="inline-flex items-center gap-2.5">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent-soft text-accent ring-1 ring-accent/15">
-              <Icon name="message" className="h-4 w-4" />
-            </span>
-            <div>
-              <p className="text-sm font-medium">{t.prefLanguage}</p>
-              <p className="text-xs text-muted">{t.prefLanguageHint}</p>
-            </div>
-          </div>
-          <LanguageToggle />
-        </div>
-        <div className="flex items-center gap-2.5 p-4">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted">
-            <Icon name="shield" className="h-4 w-4" />
-          </span>
-          <div>
-            <p className="text-sm font-medium">{t.settingsAbout}</p>
-            <p className="text-xs text-muted">{t.settingsAboutText}</p>
-          </div>
-        </div>
-        <div className="p-4">
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface-2"
-          >
-            <Icon name="key" className="h-4 w-4" />
-            {t.signInBtn}
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function AppShell({
   children,
   vehicles,
+  reminderCount,
 }: {
   children: React.ReactNode;
   vehicles: OwnerVehicle[];
+  reminderCount: number;
 }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<NavKey>("log");
   const { t } = useLang();
+  const router = useRouter();
 
   function select(key: NavKey) {
+    // Settings is a real route now (/settings) — navigate there instead of
+    // swapping an inline panel, so the deep-link and back/forward both work.
+    if (key === "settings") {
+      router.push("/settings");
+      setOpen(false);
+      return;
+    }
     setActive(key);
     setOpen(false);
   }
@@ -156,14 +121,12 @@ export function AppShell({
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar onMenu={() => setOpen(true)} />
+        <Topbar reminderCount={reminderCount} onMenu={() => setOpen(true)} />
         <main className="flex-1 px-4 py-6 lg:px-8">
-          {active === "log" ? (
-            children
-          ) : active === "vehicles" ? (
+          {active === "vehicles" ? (
             <VehiclesPanel t={t} onOpenLog={() => select("log")} vehicles={vehicles} />
           ) : (
-            <SettingsPanel t={t} />
+            children
           )}
         </main>
       </div>

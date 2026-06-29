@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
+import { useRouter } from "next/navigation";
 import { Icon } from "./icons";
 import { useLang } from "./LanguageProvider";
 import { ServiceSelect } from "./ServiceSelect";
@@ -42,12 +43,15 @@ export function ServiceLog({
   vehicles,
   initialEntries,
   verifiedWorkshops = [],
+  activeVehicleId,
 }: {
   vehicles: OwnerVehicle[];
   initialEntries: OwnerEntry[];
   verifiedWorkshops?: string[];
+  activeVehicleId?: string | null;
 }) {
   const { t } = useLang();
+  const router = useRouter();
 
   // Names are pre-lowercased + trimmed by getVerifiedWorkshopNames(). A history
   // entry's free-text `place` is "verified" when any verified workshop name is a
@@ -60,7 +64,7 @@ export function ServiceLog({
   };
 
   const [selectedId, setSelectedId] = useState<string | null>(
-    vehicles[0]?.id ?? null,
+    activeVehicleId ?? vehicles[0]?.id ?? null,
   );
   const [entries, setEntries] = useState<OwnerEntry[]>(initialEntries);
   const [, startSwitch] = useTransition();
@@ -114,6 +118,9 @@ export function ServiceLog({
       const next = await getEntries(id);
       setEntries(next);
     });
+    // Persist the active vehicle in the URL so a reload / share keeps it
+    // (server reads ?v={id} — see page.tsx). scroll:false keeps the position.
+    router.push(`/?v=${id}`, { scroll: false });
   }
 
   const selectedVehicle = vehicles.find((v) => v.id === selectedId) ?? null;
@@ -185,7 +192,11 @@ export function ServiceLog({
             <Icon name="car" />
           </span>
           <div className="min-w-0">
-            <p className="text-sm font-semibold">{selectedVehicle?.model ?? "—"}</p>
+            <p className="text-sm font-semibold">
+              {selectedVehicle
+                ? `${selectedVehicle.model ?? "—"}${selectedVehicle.year ? ` · ${selectedVehicle.year}` : ""}`
+                : "—"}
+            </p>
             <p className="font-mono text-xs tracking-wider text-muted">
               {selectedVehicle?.plate ?? "—"}
             </p>

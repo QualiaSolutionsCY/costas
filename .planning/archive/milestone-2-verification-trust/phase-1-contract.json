@@ -1,0 +1,168 @@
+{
+  "version": 1,
+  "phase": 1,
+  "goal": "admin@costas.com can sign in, land on a protected /admin route, and review every PENDING workshop with certificate preview — no non-admin can reach the route or its data",
+  "why": "M1 captures workshop registrations but nothing reviews them. This phase adds the verification data model and the read-only admin surface that the approve/reject actions in Phase 2 will act on.",
+  "generated_at": "2026-06-29T12:41:08Z",
+  "generated_by": "planner",
+  "source_plan_hash": "sha256:8dfb210205519c36e42380afb83f7e3f2f97f2a02240965ac7fa46da7c9be260",
+  "success_criteria": [
+    "Navigating to /admin as admin@costas.com renders the dashboard; navigating as owner/mechanic returns redirect('/') with no admin data in the body (VERIF-01, VERIF-07)",
+    "The dashboard lists every status='pending' workshop with name, serial, registration timestamp, and a signed-URL certificate preview link (VERIF-02)",
+    "Migration 0006_workshop_verification.sql adds status (pending|verified|rejected, default pending), reviewed_at, rejection_reason, and an admin-only RLS policy; existing rows default to pending (VERIF-07)",
+    "npx tsc --noEmit exits 0 after the migration types, role plumbing, and route are added",
+    "All new UI strings exist in BOTH el and en in lib/i18n.ts; no raw hex in the new JSX"
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Schema: workshop verification columns + admin RLS + typegen",
+      "wave": 1,
+      "depends_on": [],
+      "persona": "backend",
+      "files_modify": [
+        "src/lib/database.types.ts"
+      ],
+      "files_create": [
+        "supabase/migrations/0006_workshop_verification.sql"
+      ],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "Migration adds status (text not null default 'pending' check in pending|verified|rejected), reviewed_at (timestamptz null), rejection_reason (text null) to public.workshops; existing rows default to pending",
+        "Migration adds admin-scoped RLS policy workshops_admin_all FOR ALL TO authenticated USING/WITH CHECK app_metadata.role = 'admin', leaving existing workshops_select_own/insert_own/update_own untouched",
+        "database.types.ts workshops Row/Insert/Update gain status, reviewed_at, rejection_reason with correct nullability",
+        "Migration header notes it is applied via Supabase MCP by operator, not the CLI"
+      ],
+      "action": "Create supabase/migrations/0006_workshop_verification.sql with three add-column statements (status with CHECK + default) and the workshops_admin_all policy exactly as specified; RLS already enabled in 0001 so do not re-enable. Hand-edit database.types.ts workshops block (lines 104-130) to add the three fields to Row/Insert/Update matching the migration. Do not run npx supabase gen types.",
+      "context_files": [
+        "supabase/migrations/0001_init_schema.sql",
+        "supabase/migrations/0003_allow_admin_role.sql",
+        "src/lib/database.types.ts"
+      ],
+      "verification": [
+        {
+          "type": "grep-match",
+          "path": "supabase/migrations/0006_workshop_verification.sql",
+          "pattern": "status|reviewed_at|rejection_reason",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "supabase/migrations/0006_workshop_verification.sql",
+          "pattern": "workshops_admin_all",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/database.types.ts",
+          "pattern": "reviewed_at",
+          "expect": "present"
+        }
+      ]
+    },
+    {
+      "id": "T2",
+      "title": "Extend role plumbing: getSessionRole + sign-in routing for admin",
+      "wave": 1,
+      "depends_on": [],
+      "persona": "security",
+      "files_modify": [
+        "src/lib/session.ts",
+        "src/lib/auth-actions.ts"
+      ],
+      "files_create": [],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "getSessionRole() returns 'admin' when app_metadata.role is 'admin', still returns null for unrecognized/unauthenticated",
+        "SessionRole type is 'owner' | 'mechanic' | 'admin'",
+        "Successful admin sign-in redirects to /admin; mechanic to /mechanic; owner to /",
+        "Role is still read only from app_metadata, never user_metadata"
+      ],
+      "action": "In session.ts add 'admin' to the SessionRole union (line 4) and to the getSessionRole guard (line 40). In auth-actions.ts signIn, replace the final redirect ternary with redirect(role === 'admin' ? '/admin' : role === 'mechanic' ? '/mechanic' : '/'), keeping redirect() outside try/catch.",
+      "context_files": [
+        "src/lib/session.ts",
+        "src/lib/auth-actions.ts"
+      ],
+      "verification": [
+        {
+          "type": "grep-match",
+          "path": "src/lib/session.ts",
+          "pattern": "\"admin\"",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/auth-actions.ts",
+          "pattern": "\"/admin\"",
+          "expect": "present"
+        }
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Protected /admin route: pending-workshops review list with cert preview",
+      "wave": 2,
+      "depends_on": [
+        "T1",
+        "T2"
+      ],
+      "persona": "frontend",
+      "files_modify": [
+        "src/lib/i18n.ts"
+      ],
+      "files_create": [
+        "src/app/admin/page.tsx",
+        "src/components/AdminReviewList.tsx"
+      ],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "/admin as admin@costas.com lists every status='pending' workshop with name, serial (mono/tabular-nums), registration timestamp, and a View certificate link opening the signed URL in a new tab",
+        "/admin as owner/mechanic/unauthenticated issues redirect('/') before any workshop data is fetched — no admin data in the body",
+        "Empty state (bilingual adminEmpty) renders when there are no pending workshops",
+        "All UI text via t.* present in both el and en; Greek-primary; no raw hex in JSX; certificate signed URLs use a 60s TTL via createSignedUrl"
+      ],
+      "action": "Add admin i18n keys (adminTitle, adminSubtitle, adminPendingCount, adminColName, adminColSerial, adminColRegistered, adminEmpty) to the Translation type and both el/en dicts. Create src/app/admin/page.tsx (async server component): getSessionRole() then redirect('/') if not admin; query pending workshops; createSignedUrl(cert_path,60) per row; pass data to <AdminReviewList/>. Create src/components/AdminReviewList.tsx ('use client', useLang()) rendering cards plus the adminEmpty empty state.",
+      "context_files": [
+        "src/app/login/page.tsx",
+        "src/lib/session.ts",
+        "src/lib/supabase/server.ts",
+        "src/lib/register-actions.ts",
+        "src/components/LanguageProvider.tsx",
+        "src/lib/i18n.ts",
+        ".planning/DESIGN.md"
+      ],
+      "verification": [
+        {
+          "type": "grep-match",
+          "path": "src/app/admin/page.tsx",
+          "pattern": "getSessionRole",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/app/admin/page.tsx",
+          "pattern": "redirect\\(\"/\"\\)",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/app/admin/page.tsx",
+          "pattern": "createSignedUrl",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/app/admin/page.tsx",
+          "pattern": "AdminReviewList",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/i18n.ts",
+          "pattern": "adminTitle",
+          "expect": "present"
+        }
+      ]
+    }
+  ]
+}

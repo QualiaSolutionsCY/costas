@@ -171,6 +171,76 @@ export type Translation = {
   confirmReject: string;
   adminApproved: string;
   adminRejected: string;
+  // settings: profile, vehicles, security
+  profileSection: string;
+  vehiclesSection: string;
+  securitySection: string;
+  settingsPageSubtitle: string;
+  phoneLabel: string;
+  phonePlaceholder: string;
+  saveProfile: string;
+  profileSaved: string;
+  editVehicle: string;
+  removeVehicle: string;
+  confirmRemove: string;
+  confirmRemoveHint: string;
+  yearLabel: string;
+  yearPlaceholder: string;
+  changePassword: string;
+  newPassword: string;
+  confirmPassword: string;
+  passwordChanged: string;
+  settingsSignedOut: string;
+  settingsSignedOutHint: string;
+  saving: string;
+  backToLog: string;
+  // M4: booking — owner books a service, workshop sees incoming requests
+  bookTitle: string;
+  bookSubtitle: string;
+  bookWorkshopLabel: string;
+  bookWorkshopPlaceholder: string;
+  bookWorkshopFreeHint: string;
+  bookServiceLabel: string;
+  bookDateLabel: string;
+  bookPlateLabel: string;
+  bookNoteLabel: string;
+  bookNotePlaceholder: string;
+  bookSubmit: string;
+  bookSubmitting: string;
+  bookSent: string;
+  bookError: string;
+  myBookingsTitle: string;
+  myBookingsEmpty: string;
+  incomingTitle: string;
+  incomingSubtitle: string;
+  incomingEmpty: string;
+  bookingConfirm: string;
+  bookingMarkDone: string;
+  bookingCancel: string;
+  statusRequested: string;
+  statusConfirmed: string;
+  statusDone: string;
+  statusCancelled: string;
+  bookCta: string;
+  // M5: reminders & notifications
+  remindersTitle: string;
+  remindersSubtitle: string;
+  remindersEmpty: string;
+  reminderMot: string;
+  reminderService: string;
+  reminderDueOn: (date: string) => string;
+  reminderOverdue: (n: number) => string;
+  reminderInDays: (n: number) => string;
+  reminderDismiss: string;
+  reminderBasedOn: (date: string) => string;
+  notificationsLabel: string;
+  notificationsCount: (n: number) => string;
+  // M5: reminder preferences (consumed by the prefs task)
+  reminderPrefsSection: string;
+  reminderPrefsInApp: string;
+  reminderPrefsEmail: string;
+  reminderPrefsAdvance: string;
+  reminderPrefsSaved: string;
 };
 
 export const translations: Record<Lang, Translation> = {
@@ -348,6 +418,72 @@ export const translations: Record<Lang, Translation> = {
     confirmReject: "Επιβεβαίωση",
     adminApproved: "Εγκρίθηκε",
     adminRejected: "Απορρίφθηκε",
+    profileSection: "Προφίλ",
+    vehiclesSection: "Οχήματα",
+    securitySection: "Ασφάλεια",
+    settingsPageSubtitle: "Διαχειρίσου το προφίλ, τα οχήματα και την ασφάλειά σου.",
+    phoneLabel: "Τηλέφωνο",
+    phonePlaceholder: "π.χ. 99 123456",
+    saveProfile: "Αποθήκευση προφίλ",
+    profileSaved: "Το προφίλ αποθηκεύτηκε",
+    editVehicle: "Επεξεργασία",
+    removeVehicle: "Αφαίρεση",
+    confirmRemove: "Είσαι σίγουρος;",
+    confirmRemoveHint: "Το όχημα θα διαγραφεί οριστικά.",
+    yearLabel: "Έτος",
+    yearPlaceholder: "π.χ. 2019",
+    changePassword: "Αλλαγή κωδικού",
+    newPassword: "Νέος κωδικός",
+    confirmPassword: "Επιβεβαίωση κωδικού",
+    passwordChanged: "Ο κωδικός άλλαξε",
+    settingsSignedOut: "Συνδέσου για να δεις τις ρυθμίσεις σου",
+    settingsSignedOutHint: "Χρειάζεται λογαριασμός για προφίλ και ασφάλεια.",
+    saving: "Αποθήκευση…",
+    backToLog: "Πίσω",
+    bookTitle: "Κλείσε ραντεβού σέρβις",
+    bookSubtitle: "Διάλεξε συνεργείο, υπηρεσία και ημερομηνία.",
+    bookWorkshopLabel: "Συνεργείο",
+    bookWorkshopPlaceholder: "Διάλεξε ή γράψε συνεργείο",
+    bookWorkshopFreeHint: "Δεν το βρίσκεις; Γράψε το όνομα.",
+    bookServiceLabel: "Υπηρεσία",
+    bookDateLabel: "Ημερομηνία",
+    bookPlateLabel: "Πινακίδα (προαιρετικό)",
+    bookNoteLabel: "Σημείωση (προαιρετικό)",
+    bookNotePlaceholder: "π.χ. θόρυβος στα φρένα",
+    bookSubmit: "Στείλε αίτημα",
+    bookSubmitting: "Αποστολή…",
+    bookSent: "Το αίτημα στάλθηκε.",
+    bookError: "Κάτι πήγε στραβά. Δοκίμασε ξανά.",
+    myBookingsTitle: "Τα ραντεβού μου",
+    myBookingsEmpty: "Δεν έχεις ραντεβού ακόμα.",
+    incomingTitle: "Εισερχόμενα ραντεβού",
+    incomingSubtitle: "Αιτήματα πελατών για σέρβις.",
+    incomingEmpty: "Δεν υπάρχουν αιτήματα.",
+    bookingConfirm: "Επιβεβαίωση",
+    bookingMarkDone: "Ολοκληρώθηκε",
+    bookingCancel: "Ακύρωση",
+    statusRequested: "Σε αναμονή",
+    statusConfirmed: "Επιβεβαιωμένο",
+    statusDone: "Ολοκληρωμένο",
+    statusCancelled: "Ακυρωμένο",
+    bookCta: "Κλείσε ραντεβού",
+    remindersTitle: "Υπενθυμίσεις",
+    remindersSubtitle: "Επερχόμενα ΜΟΤ και σέρβις, υπολογισμένα από το ιστορικό σου.",
+    remindersEmpty: "Όλα εντάξει — δεν υπάρχουν επερχόμενες υπενθυμίσεις.",
+    reminderMot: "ΜΟΤ",
+    reminderService: "Επόμενο σέρβις",
+    reminderDueOn: (date) => `Λήγει ${date}`,
+    reminderOverdue: (n) => `Εκπρόθεσμο κατά ${n} ημέρες`,
+    reminderInDays: (n) => `Σε ${n} ημέρες`,
+    reminderDismiss: "Απόρριψη",
+    reminderBasedOn: (date) => `Με βάση το τελευταίο: ${date}`,
+    notificationsLabel: "Υπενθυμίσεις",
+    notificationsCount: (n) => `${n} υπενθυμίσεις`,
+    reminderPrefsSection: "Υπενθυμίσεις",
+    reminderPrefsInApp: "Ειδοποιήσεις στην εφαρμογή",
+    reminderPrefsEmail: "Ειδοποιήσεις email",
+    reminderPrefsAdvance: "Προειδοποίηση (ημέρες)",
+    reminderPrefsSaved: "Αποθηκεύτηκε",
   },
   en: {
     tagline: "Service Log",
@@ -523,5 +659,71 @@ export const translations: Record<Lang, Translation> = {
     confirmReject: "Confirm",
     adminApproved: "Approved",
     adminRejected: "Rejected",
+    profileSection: "Profile",
+    vehiclesSection: "Vehicles",
+    securitySection: "Security",
+    settingsPageSubtitle: "Manage your profile, vehicles and security.",
+    phoneLabel: "Phone",
+    phonePlaceholder: "e.g. 99 123456",
+    saveProfile: "Save profile",
+    profileSaved: "Profile saved",
+    editVehicle: "Edit",
+    removeVehicle: "Remove",
+    confirmRemove: "Are you sure?",
+    confirmRemoveHint: "This vehicle will be permanently deleted.",
+    yearLabel: "Year",
+    yearPlaceholder: "e.g. 2019",
+    changePassword: "Change password",
+    newPassword: "New password",
+    confirmPassword: "Confirm password",
+    passwordChanged: "Password changed",
+    settingsSignedOut: "Sign in to see your settings",
+    settingsSignedOutHint: "An account is needed for profile and security.",
+    saving: "Saving…",
+    backToLog: "Back",
+    bookTitle: "Book a service",
+    bookSubtitle: "Pick a workshop, service and date.",
+    bookWorkshopLabel: "Workshop",
+    bookWorkshopPlaceholder: "Choose or type a workshop",
+    bookWorkshopFreeHint: "Can't find it? Type the name.",
+    bookServiceLabel: "Service",
+    bookDateLabel: "Date",
+    bookPlateLabel: "Plate (optional)",
+    bookNoteLabel: "Note (optional)",
+    bookNotePlaceholder: "e.g. noise on braking",
+    bookSubmit: "Send request",
+    bookSubmitting: "Sending…",
+    bookSent: "Request sent.",
+    bookError: "Something went wrong. Try again.",
+    myBookingsTitle: "My bookings",
+    myBookingsEmpty: "No bookings yet.",
+    incomingTitle: "Incoming bookings",
+    incomingSubtitle: "Customer service requests.",
+    incomingEmpty: "No requests.",
+    bookingConfirm: "Confirm",
+    bookingMarkDone: "Mark done",
+    bookingCancel: "Cancel",
+    statusRequested: "Requested",
+    statusConfirmed: "Confirmed",
+    statusDone: "Done",
+    statusCancelled: "Cancelled",
+    bookCta: "Book a service",
+    remindersTitle: "Reminders",
+    remindersSubtitle: "Upcoming MOT and service dates, computed from your history.",
+    remindersEmpty: "All clear — no upcoming reminders.",
+    reminderMot: "MOT",
+    reminderService: "Next service",
+    reminderDueOn: (date) => `Due ${date}`,
+    reminderOverdue: (n) => `Overdue by ${n} days`,
+    reminderInDays: (n) => `In ${n} days`,
+    reminderDismiss: "Dismiss",
+    reminderBasedOn: (date) => `Based on last: ${date}`,
+    notificationsLabel: "Reminders",
+    notificationsCount: (n) => `${n} reminders`,
+    reminderPrefsSection: "Reminders",
+    reminderPrefsInApp: "In-app notifications",
+    reminderPrefsEmail: "Email notifications",
+    reminderPrefsAdvance: "Advance notice (days)",
+    reminderPrefsSaved: "Saved",
   },
 };

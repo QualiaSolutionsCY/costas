@@ -1,0 +1,90 @@
+{
+  "ok": true,
+  "phase": 1,
+  "goal": "admin@costas.com can sign in, land on a protected /admin route, and review every PENDING workshop with certificate preview — no non-admin can reach the route or its data",
+  "checked": 10,
+  "failed": 0,
+  "generated_at": "2026-06-29T12:47:47.183Z",
+  "results": [
+    {
+      "task_id": "T1",
+      "task_title": "Schema: workshop verification columns + admin RLS + typegen",
+      "index": 0,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T1",
+      "task_title": "Schema: workshop verification columns + admin RLS + typegen",
+      "index": 1,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T1",
+      "task_title": "Schema: workshop verification columns + admin RLS + typegen",
+      "index": 2,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T2",
+      "task_title": "Extend role plumbing: getSessionRole + sign-in routing for admin",
+      "index": 0,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T2",
+      "task_title": "Extend role plumbing: getSessionRole + sign-in routing for admin",
+      "index": 1,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Protected /admin route: pending-workshops review list with cert preview",
+      "index": 0,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Protected /admin route: pending-workshops review list with cert preview",
+      "index": 1,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Protected /admin route: pending-workshops review list with cert preview",
+      "index": 2,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Protected /admin route: pending-workshops review list with cert preview",
+      "index": 3,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Protected /admin route: pending-workshops review list with cert preview",
+      "index": 4,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

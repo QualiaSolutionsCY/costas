@@ -5,8 +5,15 @@ import { car } from "@/lib/data";
 import { Icon } from "./icons";
 import { useLang } from "./LanguageProvider";
 import { LanguageToggle } from "./LanguageToggle";
+import { NotificationBell } from "./NotificationBell";
 
-export function Topbar({ onMenu }: { onMenu: () => void }) {
+export function Topbar({
+  onMenu,
+  reminderCount,
+}: {
+  onMenu: () => void;
+  reminderCount: number;
+}) {
   const { t } = useLang();
   return (
     <header className="sticky top-0 z-20 flex items-center gap-3 border-b bg-surface/85 px-4 py-3 backdrop-blur lg:px-6">
@@ -56,6 +63,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
           <Icon name="shield" className="h-3.5 w-3.5 text-positive" />
           {t.registerLink}
         </Link>
+        <NotificationBell count={reminderCount} />
         <LanguageToggle />
         <div className="flex items-center gap-2.5 rounded-lg border py-1 pl-2.5 pr-2.5">
           <Icon name="car" className="h-4 w-4 text-muted" />

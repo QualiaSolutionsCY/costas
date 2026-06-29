@@ -108,7 +108,10 @@ export type Database = {
           id: string
           name: string
           owner_id: string
+          rejection_reason: string | null
+          reviewed_at: string | null
           serial: string
+          status: string
         }
         Insert: {
           cert_path?: string | null
@@ -116,7 +119,10 @@ export type Database = {
           id?: string
           name: string
           owner_id: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
           serial: string
+          status?: string
         }
         Update: {
           cert_path?: string | null
@@ -124,7 +130,10 @@ export type Database = {
           id?: string
           name?: string
           owner_id?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
           serial?: string
+          status?: string
         }
         Relationships: []
       }

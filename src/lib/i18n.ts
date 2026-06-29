@@ -6,7 +6,7 @@ export type MechSeedEntry = { date: string; plate: string; work: string };
 
 export type Translation = {
   tagline: string;
-  nav: { log: string; vehicles: string; settings: string };
+  nav: { log: string; vehicles: string; settings: string; book: string };
   sidebarNote: string;
   topbarTitle: string;
   openMenu: string;
@@ -246,7 +246,7 @@ export type Translation = {
 export const translations: Record<Lang, Translation> = {
   el: {
     tagline: "Βιβλίο Σέρβις",
-    nav: { log: "Βιβλίο Σέρβις", vehicles: "Τα Οχήματά μου", settings: "Ρυθμίσεις" },
+    nav: { log: "Βιβλίο Σέρβις", vehicles: "Τα Οχήματά μου", settings: "Ρυθμίσεις", book: "Κλείσε ραντεβού" },
     sidebarNote: "Κράτα το πλήρες ιστορικό σέρβις του αυτοκινήτου σου — πού και πότε έγινε κάθε εργασία.",
     topbarTitle: "Βιβλίο Σέρβις",
     openMenu: "Άνοιγμα μενού",
@@ -487,7 +487,7 @@ export const translations: Record<Lang, Translation> = {
   },
   en: {
     tagline: "Service Log",
-    nav: { log: "Service Log", vehicles: "My Vehicles", settings: "Settings" },
+    nav: { log: "Service Log", vehicles: "My Vehicles", settings: "Settings", book: "Book a service" },
     sidebarNote: "Keep the full service history of your car — where and when each job was done.",
     topbarTitle: "Service Log",
     openMenu: "Open menu",

@@ -90,6 +90,11 @@ export function AppShell({
       setOpen(false);
       return;
     }
+    if (key === "book") {
+      router.push("/book");
+      setOpen(false);
+      return;
+    }
     setActive(key);
     setOpen(false);
   }

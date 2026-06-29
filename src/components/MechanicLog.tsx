@@ -185,6 +185,13 @@ export function MechanicLog({
           <Icon name="shield" className="h-3.5 w-3.5 text-positive" />
           {t.registerLink}
         </Link>
+        <Link
+          href="/bookings"
+          className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-surface-2"
+        >
+          <Icon name="calendar" className="h-3.5 w-3.5" />
+          {t.incomingTitle}
+        </Link>
       </div>
 
       {/* ───── Step 1: plate ───── */}

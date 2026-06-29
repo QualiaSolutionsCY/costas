@@ -1,0 +1,95 @@
+{
+  "project": "Costas — Car Service Log",
+  "client": "Demo",
+  "type": "full",
+  "assigned_to": "",
+  "team_id": "",
+  "project_id": "",
+  "erp_project_id": "",
+  "client_id": "",
+  "workspace_id": "",
+  "git_remote": "",
+  "milestone": 6,
+  "milestone_name": "Handoff",
+  "milestones": [
+    {
+      "num": 1,
+      "name": "Make It Real",
+      "total_phases": 4,
+      "phases_completed": 4,
+      "tasks_completed": 0,
+      "shipped_url": "",
+      "closed_at": "2026-06-29T12:17:54.416Z"
+    },
+    {
+      "num": 2,
+      "name": "Verification & Trust",
+      "total_phases": 2,
+      "phases_completed": 2,
+      "tasks_completed": 0,
+      "shipped_url": "",
+      "closed_at": "2026-06-29T14:36:09.839Z"
+    },
+    {
+      "num": 3,
+      "name": "Accounts & Settings",
+      "total_phases": 2,
+      "phases_completed": 1,
+      "tasks_completed": 0,
+      "shipped_url": "",
+      "closed_at": "2026-06-29T15:29:33.033Z"
+    },
+    {
+      "num": 4,
+      "name": "Booking & Scheduling",
+      "total_phases": 2,
+      "phases_completed": 1,
+      "tasks_completed": 0,
+      "shipped_url": "",
+      "closed_at": "2026-06-29T15:29:33.132Z"
+    },
+    {
+      "num": 5,
+      "name": "Reminders & Notifications",
+      "total_phases": 2,
+      "phases_completed": 1,
+      "tasks_completed": 0,
+      "shipped_url": "",
+      "closed_at": "2026-06-29T15:29:33.231Z"
+    }
+  ],
+  "phase": 2,
+  "phase_name": "Profile, Vehicles & Settings Surface",
+  "total_phases": 2,
+  "status": "setup",
+  "profile": "strict",
+  "lifecycle": "build",
+  "launched_at": "",
+  "launch_source": "",
+  "wave": 0,
+  "tasks_done": 0,
+  "tasks_total": 0,
+  "verification": "pending",
+  "gap_cycles": {
+    "1": 0
+  },
+  "blockers": [],
+  "session_started_at": "2026-06-29T14:38:38.380Z",
+  "last_updated": "2026-06-29T15:41:21.037Z",
+  "last_pushed_at": "",
+  "last_commit": "",
+  "build_count": 7,
+  "deploy_count": 0,
+  "deployed_url": "",
+  "notes": "",
+  "submitted_by": "",
+  "lifetime": {
+    "tasks_completed": 0,
+    "phases_completed": 7,
+    "milestones_completed": 5,
+    "total_phases": 12,
+    "last_closed_milestone": 5,
+    "updates_completed": 0
+  },
+  "report_seq": 1
+}

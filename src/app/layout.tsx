@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/components/LanguageProvider";
+import Analytics from "@/components/Analytics";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +15,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Costas · Έλεγχος Αυτοκινήτου",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+  ),
+  title: {
+    default: "Costas · Έλεγχος Αυτοκινήτου",
+    template: "%s",
+  },
   description: "Βρες πιστοποιημένο μηχανικό για έλεγχο του αυτοκινήτου σου",
+  openGraph: {
+    type: "website",
+    locale: "el_GR",
+    siteName: "Costas",
+    title: "Costas · Έλεγχος Αυτοκινήτου",
+    description: "Βρες πιστοποιημένο μηχανικό για έλεγχο του αυτοκινήτου σου",
+  },
 };
 
 export default function RootLayout({
@@ -30,6 +44,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <LanguageProvider>{children}</LanguageProvider>
+        <Analytics />
       </body>
     </html>
   );

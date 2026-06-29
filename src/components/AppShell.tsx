@@ -1,80 +1,75 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { Icon } from "./icons";
 import { useLang } from "./LanguageProvider";
 import { LanguageToggle } from "./LanguageToggle";
-import { signOut } from "@/lib/auth-actions";
+import type { OwnerVehicle } from "@/lib/owner-actions";
 import type { NavKey } from "@/lib/data";
 import type { Translation } from "@/lib/i18n";
 
-type Vehicle = { model: string; plate: string };
-type Entry = { serviced_on: string };
-
-function formatDate(iso: string) {
-  const [y, m, d] = iso.split("-");
-  return d && m && y ? `${d}/${m}/${y}` : iso;
-}
-
-/** Real "My Vehicles" surface — the tracked vehicle with its at-a-glance stats. */
+/** "My Vehicles" surface — every tracked vehicle, one card row each. */
 function VehiclesPanel({
   t,
   onOpenLog,
-  vehicle,
-  entries,
+  vehicles,
 }: {
   t: Translation;
   onOpenLog: () => void;
-  vehicle: Vehicle | null;
-  entries: Entry[];
+  vehicles: OwnerVehicle[];
 }) {
-  const count = entries.length;
-  const last = entries
-    .map((e) => e.serviced_on)
-    .sort((a, b) => b.localeCompare(a))[0];
   return (
     <div className="mx-auto max-w-2xl">
       <div className="px-1">
         <h2 className="text-base font-semibold tracking-tight">{t.nav.vehicles}</h2>
         <p className="mt-0.5 text-xs text-muted">{t.vehiclesSubtitle}</p>
       </div>
-      <div className="mt-4 rounded-xl border border-accent/15 bg-accent-soft p-4">
-        <div className="flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded-lg bg-accent text-surface shadow-sm">
-            <Icon name="car" />
-          </span>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold">{vehicle?.model ?? "—"}</p>
-            <p className="font-mono text-xs tracking-wider text-muted">{vehicle?.plate ?? "—"}</p>
-          </div>
+
+      {vehicles.length === 0 ? (
+        <div className="mt-4 grid place-items-center rounded-xl border border-dashed bg-surface py-12 text-center">
+          <Icon name="car" className="h-7 w-7 text-muted" />
+          <p className="mt-3 text-sm font-medium">{t.historyEmpty}</p>
           <button
             onClick={onOpenLog}
-            className="ml-auto inline-flex items-center gap-1 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-surface transition-opacity hover:opacity-90"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-surface transition-opacity hover:opacity-90"
           >
-            {t.openLog}
-            <Icon name="chevron" className="h-3.5 w-3.5 -rotate-90" />
+            <Icon name="plus" className="h-4 w-4" />
+            {t.addVehicle}
           </button>
         </div>
-        <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-lg border bg-border">
-          <div className="bg-surface px-3 py-2">
-            <dt className="text-[11px] text-muted">{t.statServices}</dt>
-            <dd className="mt-0.5 text-sm font-semibold tabular-nums">{count}</dd>
-          </div>
-          <div className="bg-surface px-3 py-2">
-            <dt className="text-[11px] text-muted">{t.statLast}</dt>
-            <dd className="mt-0.5 font-mono text-sm font-semibold tabular-nums">
-              {last ? formatDate(last) : t.statNone}
-            </dd>
-          </div>
-        </dl>
-      </div>
+      ) : (
+        <ul className="mt-4 space-y-3">
+          {vehicles.map((v) => (
+            <li
+              key={v.id}
+              className="flex items-center gap-3 rounded-xl border border-accent/15 bg-accent-soft p-4"
+            >
+              <span className="grid h-11 w-11 place-items-center rounded-lg bg-accent text-surface shadow-sm">
+                <Icon name="car" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold">{v.model ?? "—"}</p>
+                <p className="font-mono text-xs tracking-wider text-muted">{v.plate}</p>
+              </div>
+              <button
+                onClick={onOpenLog}
+                className="ml-auto inline-flex items-center gap-1 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-surface transition-opacity hover:opacity-90"
+              >
+                {t.openLog}
+                <Icon name="chevron" className="h-3.5 w-3.5 -rotate-90" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
 
-/** Honest Settings surface — language preference + about. No fake toggles. */
+/** Honest Settings surface — language preference + about + optional sign in. */
 function SettingsPanel({ t }: { t: Translation }) {
   return (
     <div className="mx-auto max-w-2xl">
@@ -104,15 +99,15 @@ function SettingsPanel({ t }: { t: Translation }) {
             <p className="text-xs text-muted">{t.settingsAboutText}</p>
           </div>
         </div>
-        <form action={signOut} className="p-4">
-          <button
-            type="submit"
-            className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium text-negative transition-colors hover:bg-negative/5"
+        <div className="p-4">
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface-2"
           >
             <Icon name="key" className="h-4 w-4" />
-            {t.signOut}
-          </button>
-        </form>
+            {t.signInBtn}
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -120,12 +115,10 @@ function SettingsPanel({ t }: { t: Translation }) {
 
 export function AppShell({
   children,
-  vehicle,
-  entries,
+  vehicles,
 }: {
   children: React.ReactNode;
-  vehicle: Vehicle | null;
-  entries: Entry[];
+  vehicles: OwnerVehicle[];
 }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<NavKey>("log");
@@ -168,7 +161,7 @@ export function AppShell({
           {active === "log" ? (
             children
           ) : active === "vehicles" ? (
-            <VehiclesPanel t={t} onOpenLog={() => select("log")} vehicle={vehicle} entries={entries} />
+            <VehiclesPanel t={t} onOpenLog={() => select("log")} vehicles={vehicles} />
           ) : (
             <SettingsPanel t={t} />
           )}

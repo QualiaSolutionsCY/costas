@@ -1,19 +1,18 @@
-import { redirect } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { ServiceLog } from "@/components/ServiceLog";
-import { getSessionRole } from "@/lib/session";
-import { getOwnerVehicleWithEntries } from "@/lib/owner-actions";
+import { getVehicles, getEntries } from "@/lib/owner-actions";
 
+// No auth gate — the owner flow is anonymous. getVehicles() returns every
+// vehicle; we hydrate the first one's history server-side and let the client
+// swap on a vehicle switch.
 export default async function Home() {
-  const role = await getSessionRole();
-  if (!role) redirect("/welcome");
-  if (role === "mechanic") redirect("/mechanic");
-
-  const { vehicle, entries } = await getOwnerVehicleWithEntries();
+  const vehicles = await getVehicles();
+  const firstId = vehicles[0]?.id ?? null;
+  const entries = firstId ? await getEntries(firstId) : [];
 
   return (
-    <AppShell vehicle={vehicle} entries={entries}>
-      <ServiceLog vehicle={vehicle} initialEntries={entries} />
+    <AppShell vehicles={vehicles}>
+      <ServiceLog vehicles={vehicles} initialEntries={entries} />
     </AppShell>
   );
 }

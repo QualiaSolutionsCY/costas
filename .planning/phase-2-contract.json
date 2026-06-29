@@ -1,236 +1,280 @@
 {
   "version": 1,
   "phase": 2,
-  "goal": "A signed-in owner can view/edit their profile (name, phone), perform full vehicle CRUD (add/edit/remove with confirmation), switch the active vehicle to scope the log, and reach all three from a real /settings page wired to the sidebar — bilingual, all states handled.",
-  "why": "Turns the seeded-account assumption into a real self-service account surface — the last gap before M3 (Accounts & Settings) can close. Covers ACCT-04..10.",
-  "generated_at": "2026-06-29T15:00:47Z",
+  "goal": "Replace placeholder copy with final Greek-primary content; wire production SEO (per-route meta, OG image, sitemap.xml, robots.txt) and privacy-respecting analytics.",
+  "why": "The demo is live and public but search engines see one static title across all 12 routes, link previews have no image, crawlers have no sitemap, and there is zero usage signal. This phase makes the public surface discoverable and measurable without redesigning anything.",
+  "generated_at": "2026-06-29T17:23:13Z",
   "generated_by": "planner",
-  "source_plan_hash": "sha256:f1311a7f86699b72b0bb1ab406132cfea4021fa1bc067b780a7c3b46dc970668",
+  "source_plan_hash": "sha256:f868596394dcaba0c3ea8435f29dae1d8de8d9fe736c7e042afe140f6ed22439",
   "success_criteria": [
-    "Clicking Settings opens a real /settings page with Profile / Vehicles / Security; signed-out shows a sign-in prompt, signed-in shows the user's data (ACCT-10).",
-    "Editing display name or phone and saving persists to profiles via profiles_update_own RLS and survives a hard refresh (ACCT-04, ACCT-05).",
-    "An owner can add, edit (model/plate/year inline), and remove (with a bilingual confirm dialog) vehicles; removed vehicles disappear (ACCT-06, ACCT-07, ACCT-08).",
-    "An owner with 2+ vehicles can switch the active vehicle; the log + history scope to it and the choice persists across a reload via ?v= (ACCT-09).",
-    "The Security section changes the password via the existing changePassword action with bilingual success/error.",
-    "npx tsc --noEmit exits 0; no TODO/FIXME/placeholder in touched files; every new i18n key present in both el and en."
+    "Each public route emits a unique, accurate Greek-primary <title> + meta description.",
+    "/sitemap.xml and /robots.txt are served and valid; /opengraph-image returns a 1200x630 PNG that renders in a link-preview check.",
+    "Analytics fires a pageview on navigation when NEXT_PUBLIC_ANALYTICS_DOMAIN is set, and renders nothing when unset.",
+    "npx tsc --noEmit exits 0; src/lib/i18n.ts unchanged (EL/EN stays 218/218); no env file or analytics key committed."
   ],
   "tasks": [
     {
       "id": "T1",
-      "title": "Migration 0008 + profile & vehicle data seam",
+      "title": "sitemap.ts + robots.ts (crawl surface)",
       "wave": 1,
       "depends_on": [],
       "persona": "backend",
-      "files_modify": [
-        "src/lib/owner-actions.ts"
-      ],
+      "files_modify": [],
       "files_create": [
-        "supabase/migrations/0008_profile_vehicle_fields.sql",
-        "src/lib/profile-actions.ts"
+        "src/app/sitemap.ts",
+        "src/app/robots.ts"
       ],
       "files_delete": [],
       "acceptance_criteria": [
-        "0008 adds profiles.phone (text, nullable), vehicles.year (int, nullable), and a demo-permissive vehicles delete RLS policy matching 0005's using(true) style.",
-        "getProfile() returns the current user's {full_name, phone} or null when signed out; updateProfile Zod-validates name (1..80) + optional phone (max 20) and writes via profiles_update_own.",
-        "updateVehicle Zod-validates {id, model, plate(normalized), year? 1900..2030} and updates; removeVehicle validates {id} and deletes; both revalidate / and /settings.",
-        "getVehicles() selects and returns year on each OwnerVehicle."
+        "/sitemap.xml returns valid XML with one url loc per indexable route, each URL built from process.env.NEXT_PUBLIC_SITE_URL (no hardcoded domain).",
+        "/robots.txt returns User-Agent * with Allow /, Disallow covering private app surfaces, and a Sitemap line pointing at the NEXT_PUBLIC_SITE_URL sitemap.xml.",
+        "npx tsc --noEmit exits 0."
       ],
-      "action": "Write 0008 migration: add column if not exists phone/year + create policy demo_vehicles_delete for delete using(true). In owner-actions.ts add year to OwnerVehicle + getVehicles select, add vehicleEditSchema + vehicleRemoveSchema, add updateVehicle and removeVehicle actions ({ok,error} shape, revalidate / and /settings). Create profile-actions.ts: getProfile() (getUser-gated maybeSingle) and updateProfile() (Zod name+phone, session-required, update by id=user.id, revalidate /settings).",
+      "action": "Create src/app/sitemap.ts (default export sitemap returning MetadataRoute.Sitemap) listing public routes /, /mechanic, /register, /welcome, /login, /signup, /book with url built from process.env.NEXT_PUBLIC_SITE_URL; exclude session-scoped surfaces. Create src/app/robots.ts (default export robots returning MetadataRoute.Robots) with userAgent star, allow /, disallow private surfaces, sitemap pointing at base sitemap.xml using the same env base.",
       "context_files": [
-        "src/lib/owner-actions.ts",
-        "src/lib/session.ts",
-        "src/lib/plate.ts",
-        "supabase/migrations/0001_init_schema.sql",
-        "supabase/migrations/0004_demo_no_login_public_access.sql",
-        "supabase/migrations/0005_demo_public_all_roles.sql",
+        "node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/01-metadata/sitemap.md",
+        "node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/01-metadata/robots.md",
         ".planning/PROJECT.md"
       ],
       "verification": [
         {
-          "type": "grep-match",
-          "path": "supabase/migrations/0008_profile_vehicle_fields.sql",
-          "pattern": "add column if not exists phone|add column if not exists year|demo_vehicles_delete",
+          "type": "file-exists",
+          "path": "src/app/sitemap.ts",
+          "expect": "present"
+        },
+        {
+          "type": "file-exists",
+          "path": "src/app/robots.ts",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/lib/owner-actions.ts",
-          "pattern": "export async function updateVehicle|export async function removeVehicle",
+          "path": "src/app/sitemap.ts",
+          "pattern": "NEXT_PUBLIC_SITE_URL",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/lib/profile-actions.ts",
-          "pattern": "export async function getProfile|export async function updateProfile",
+          "path": "src/app/sitemap.ts",
+          "pattern": "MetadataRoute\\.Sitemap",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/lib/owner-actions.ts",
-          "pattern": "year",
+          "path": "src/app/robots.ts",
+          "pattern": "MetadataRoute\\.Robots",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/app/robots.ts",
+          "pattern": "sitemap",
           "expect": "present"
         }
       ]
     },
     {
       "id": "T2",
-      "title": "Bilingual i18n keys for settings, profile, vehicle CRUD",
+      "title": "opengraph-image.tsx (link-preview image)",
       "wave": 1,
       "depends_on": [],
       "persona": "frontend",
-      "files_modify": [
-        "src/lib/i18n.ts"
+      "files_modify": [],
+      "files_create": [
+        "src/app/opengraph-image.tsx"
       ],
-      "files_create": [],
       "files_delete": [],
       "acceptance_criteria": [
-        "Translation type and both el + en dictionaries gain identical keys: profileSection, vehiclesSection, securitySection, settingsPageSubtitle, phoneLabel, phonePlaceholder, saveProfile, profileSaved, editVehicle, removeVehicle, confirmRemove, confirmRemoveHint, yearLabel, yearPlaceholder, changePassword, newPassword, confirmPassword, passwordChanged, settingsSignedOut, settingsSignedOutHint, saving.",
-        "npx tsc --noEmit exits 0, proving both dictionaries satisfy the type.",
-        "Greek values are real translations matching the existing register; reuse existing nameLabel for display name (do NOT add nameLabel2)."
+        "A request to /opengraph-image returns a 1200x630 PNG.",
+        "The image matches the shipped brand: barely-tinted neutral ground, the Costas C mark in indigo accent, Greek-primary tagline; no colors outside the DESIGN.md palette.",
+        "npx tsc --noEmit exits 0."
       ],
-      "action": "Add each new key to the Translation type as string, then add EL + EN values to both dictionaries. Reuse existing nameLabel for the profile display-name label (no duplicate). Greek primary, real translations.",
+      "action": "Create src/app/opengraph-image.tsx: import ImageResponse from next/og; export alt (Greek), size width 1200 height 630, contentType image/png; default-export Image returning new ImageResponse(JSX, size). Use inline-style literal palette hex (#fbfbfc ground, #111114 foreground, #4f46e5 accent, #71757e muted) since Satori cannot resolve CSS vars; every flex container gets explicit display flex. Do NOT load a Geist ttf (none bundled) — use default font.",
       "context_files": [
-        "src/lib/i18n.ts"
+        "node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/01-metadata/opengraph-image.md",
+        ".planning/DESIGN.md",
+        "src/app/login/page.tsx"
       ],
       "verification": [
         {
-          "type": "command-exit",
-          "command": "npx",
-          "args": [
-            "tsc",
-            "--noEmit"
-          ],
-          "expected_exit": 0
+          "type": "file-exists",
+          "path": "src/app/opengraph-image.tsx",
+          "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/lib/i18n.ts",
-          "pattern": "securitySection|profileSection|confirmRemove|passwordChanged|settingsSignedOut",
+          "path": "src/app/opengraph-image.tsx",
+          "pattern": "next/og",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/app/opengraph-image.tsx",
+          "pattern": "1200",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/app/opengraph-image.tsx",
+          "pattern": "#4f46e5",
           "expect": "present"
         }
       ]
     },
     {
       "id": "T3",
-      "title": "Real /settings route: Profile, Vehicles, Security panels + sidebar wiring",
-      "wave": 2,
-      "depends_on": [
-        "T1",
-        "T2"
-      ],
+      "title": "Per-route Greek-primary metadata (unique title + description on every public route)",
+      "wave": 1,
+      "depends_on": [],
       "persona": "frontend",
       "files_modify": [
-        "src/components/AppShell.tsx",
-        "src/components/Sidebar.tsx"
+        "src/app/page.tsx",
+        "src/app/mechanic/page.tsx",
+        "src/app/register/page.tsx",
+        "src/app/book/page.tsx",
+        "src/app/bookings/page.tsx",
+        "src/app/settings/page.tsx",
+        "src/app/admin/page.tsx",
+        "src/app/reminders/page.tsx",
+        "src/app/auth/reset-password/page.tsx"
       ],
       "files_create": [
-        "src/app/settings/page.tsx",
-        "src/components/SettingsClient.tsx"
+        "src/app/login/layout.tsx",
+        "src/app/signup/layout.tsx",
+        "src/app/forgot-password/layout.tsx",
+        "src/app/welcome/layout.tsx"
       ],
       "files_delete": [],
       "acceptance_criteria": [
-        "Clicking Settings in the sidebar navigates to /settings (real route, /admin server-component pattern), not the inline language-only panel.",
-        "Signed-out renders a bilingual sign-in prompt (t.settingsSignedOut + Link to /login); signed-in renders Profile / Vehicles / Security with the user's data.",
-        "Profile save calls updateProfile, shows t.profileSaved, persists after a hard refresh.",
-        "Vehicles section: each row shows model+plate+year with Edit (inline pre-filled form -> updateVehicle) and Remove (bilingual confirm dialog -> removeVehicle, row disappears).",
-        "Security section: two-field form calls existing changePassword; ok shows t.passwordChanged; mismatch/error shows bilingual error.",
-        "Every control keyboard-accessible with labels; loading/error/empty/confirm states present."
+        "Each of the 12 public routes emits a unique title and a non-empty meta description, written Greek-primary.",
+        "No two routes share the same title.",
+        "The 4 client routes (login, signup, forgot-password, welcome) get title/description from a new sibling layout.tsx, not from the client page.tsx.",
+        "npx tsc --noEmit exits 0; no new i18n keys (EL/EN stays 218/218)."
       ],
-      "action": "Create src/app/settings/page.tsx (server: getProfile + getVehicles, /admin-style container, pass to SettingsClient). Create SettingsClient.tsx ('use client'): three sections using existing card/input/button patterns, useActionState for updateProfile/updateVehicle/removeVehicle/changePassword; remove-confirm overlay; Icon glyphs only; text via t.*; signed-out -> settingsSignedOut card linking /login. In AppShell.tsx route settings nav to /settings via useRouter; delete the dead inline panel.",
+      "action": "Add/extend export const metadata Metadata = { title, description } on each server page with distinct Greek-primary strings; add robots index false on settings/admin/reminders/auth-reset-password. Create a server-component sibling layout.tsx for each of login/signup/forgot-password/welcome (which are use client and cannot export metadata) exporting metadata and returning children. Do NOT touch src/lib/i18n.ts — these are static SEO strings, not UI copy.",
       "context_files": [
-        "src/components/AppShell.tsx",
-        "src/components/Sidebar.tsx",
-        "src/app/admin/page.tsx",
-        "src/lib/account-actions.ts",
-        "src/components/ServiceLog.tsx",
-        ".planning/DESIGN.md",
-        "src/lib/i18n.ts"
+        "src/app/layout.tsx",
+        "src/app/page.tsx",
+        "src/app/mechanic/page.tsx",
+        "src/app/register/page.tsx",
+        ".planning/PRODUCT.md",
+        ".planning/DESIGN.md"
       ],
       "verification": [
         {
           "type": "file-exists",
-          "path": "src/app/settings/page.tsx",
+          "path": "src/app/login/layout.tsx",
           "expect": "present"
         },
         {
           "type": "file-exists",
-          "path": "src/components/SettingsClient.tsx",
+          "path": "src/app/signup/layout.tsx",
+          "expect": "present"
+        },
+        {
+          "type": "file-exists",
+          "path": "src/app/forgot-password/layout.tsx",
+          "expect": "present"
+        },
+        {
+          "type": "file-exists",
+          "path": "src/app/welcome/layout.tsx",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/components/SettingsClient.tsx",
-          "pattern": "updateProfile|updateVehicle|removeVehicle|changePassword",
+          "path": "src/app/page.tsx",
+          "pattern": "export const metadata",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/components/AppShell.tsx",
-          "pattern": "/settings|useRouter",
+          "path": "src/app/settings/page.tsx",
+          "pattern": "export const metadata",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/components/SettingsClient.tsx",
-          "pattern": "confirmRemove|settingsSignedOut",
+          "path": "src/app/admin/page.tsx",
+          "pattern": "export const metadata",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/app/reminders/page.tsx",
+          "pattern": "export const metadata",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/app/mechanic/page.tsx",
+          "pattern": "description",
           "expect": "present"
         }
       ]
     },
     {
       "id": "T4",
-      "title": "Active-vehicle switcher scoped by ?v= searchParam",
+      "title": "Root metadata defaults (metadataBase + OG) + privacy-respecting analytics",
       "wave": 2,
       "depends_on": [
-        "T1"
+        "T2"
       ],
       "persona": "frontend",
       "files_modify": [
-        "src/app/page.tsx",
-        "src/components/ServiceLog.tsx",
-        "src/components/AppShell.tsx"
+        "src/app/layout.tsx"
       ],
-      "files_create": [],
+      "files_create": [
+        "src/components/Analytics.tsx"
+      ],
       "files_delete": [],
       "acceptance_criteria": [
-        "page.tsx reads searchParams (?v={id}); when present and valid it hydrates getEntries(v) and passes activeVehicleId to ServiceLog; absent defaults to newest vehicle.",
-        "Switching the vehicle via the existing pill switcher updates the URL to ?v={id} and swaps history; the active vehicle persists across a hard reload.",
-        "The vehicle hero shows year when present (e.g. 'VW Golf · 2019'); absence renders cleanly with no 'null'."
+        "Root metadata sets metadataBase from NEXT_PUBLIC_SITE_URL, a title default plus template, and an openGraph object (type website, locale el_GR, siteName Costas).",
+        "The OG image from Task 2 appears as og:image once metadataBase is set.",
+        "Analytics renders nothing (returns null, no script) when NEXT_PUBLIC_ANALYTICS_DOMAIN is unset; when set, injects one next/script loader and fires a pageview on navigation.",
+        "No analytics key/domain hardcoded; nothing secret committed.",
+        "npx tsc --noEmit exits 0."
       ],
-      "action": "In page.tsx use Next 16 async searchParams (Promise) to compute a validated activeId (fallback newest), hydrate entries, pass activeVehicleId to ServiceLog. In ServiceLog.tsx add activeVehicleId prop, init selectedId from it, push /?v={id} via useRouter on switchVehicle (keep getEntries transition), render selectedVehicle.year in the hero when truthy. Verify AppShell needs no change before editing it.",
+      "action": "Create src/components/Analytics.tsx (server component): read NEXT_PUBLIC_ANALYTICS_DOMAIN; return null when falsy; else render Plausible via next/script (defer, data-domain, plausible.io script, afterInteractive). Extend root metadata in layout.tsx: metadataBase from NEXT_PUBLIC_SITE_URL, title default plus template, openGraph (type, locale el_GR, siteName, title, description). Render Analytics last in body. Add the env var to .env.local only.",
       "context_files": [
-        "src/app/page.tsx",
-        "src/components/ServiceLog.tsx",
-        "src/components/AppShell.tsx",
-        "src/lib/owner-actions.ts",
-        "AGENTS.md"
+        "src/app/layout.tsx",
+        "node_modules/next/dist/docs/01-app/01-getting-started/14-metadata-and-og-images.md",
+        ".planning/DESIGN.md"
       ],
       "verification": [
         {
-          "type": "command-exit",
-          "command": "npx",
-          "args": [
-            "tsc",
-            "--noEmit"
-          ],
-          "expected_exit": 0
-        },
-        {
-          "type": "grep-match",
-          "path": "src/app/page.tsx",
-          "pattern": "searchParams|activeVehicleId",
+          "type": "file-exists",
+          "path": "src/components/Analytics.tsx",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/components/ServiceLog.tsx",
-          "pattern": "router.push|activeVehicleId",
+          "path": "src/app/layout.tsx",
+          "pattern": "metadataBase",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/components/ServiceLog.tsx",
-          "pattern": "\\.year",
+          "path": "src/app/layout.tsx",
+          "pattern": "openGraph",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/app/layout.tsx",
+          "pattern": "Analytics",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/components/Analytics.tsx",
+          "pattern": "NEXT_PUBLIC_ANALYTICS_DOMAIN",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/components/Analytics.tsx",
+          "pattern": "return null",
           "expect": "present"
         }
       ]

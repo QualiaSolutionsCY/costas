@@ -1,0 +1,210 @@
+{
+  "ok": true,
+  "phase": 2,
+  "goal": "Replace placeholder copy with final Greek-primary content; wire production SEO (per-route meta, OG image, sitemap.xml, robots.txt) and privacy-respecting analytics.",
+  "checked": 25,
+  "failed": 0,
+  "generated_at": "2026-06-29T17:38:57.005Z",
+  "results": [
+    {
+      "task_id": "T1",
+      "task_title": "sitemap.ts + robots.ts (crawl surface)",
+      "index": 0,
+      "type": "file-exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T1",
+      "task_title": "sitemap.ts + robots.ts (crawl surface)",
+      "index": 1,
+      "type": "file-exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T1",
+      "task_title": "sitemap.ts + robots.ts (crawl surface)",
+      "index": 2,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T1",
+      "task_title": "sitemap.ts + robots.ts (crawl surface)",
+      "index": 3,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T1",
+      "task_title": "sitemap.ts + robots.ts (crawl surface)",
+      "index": 4,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T1",
+      "task_title": "sitemap.ts + robots.ts (crawl surface)",
+      "index": 5,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T2",
+      "task_title": "opengraph-image.tsx (link-preview image)",
+      "index": 0,
+      "type": "file-exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T2",
+      "task_title": "opengraph-image.tsx (link-preview image)",
+      "index": 1,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T2",
+      "task_title": "opengraph-image.tsx (link-preview image)",
+      "index": 2,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T2",
+      "task_title": "opengraph-image.tsx (link-preview image)",
+      "index": 3,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Per-route Greek-primary metadata (unique title + description on every public route)",
+      "index": 0,
+      "type": "file-exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Per-route Greek-primary metadata (unique title + description on every public route)",
+      "index": 1,
+      "type": "file-exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Per-route Greek-primary metadata (unique title + description on every public route)",
+      "index": 2,
+      "type": "file-exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Per-route Greek-primary metadata (unique title + description on every public route)",
+      "index": 3,
+      "type": "file-exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Per-route Greek-primary metadata (unique title + description on every public route)",
+      "index": 4,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Per-route Greek-primary metadata (unique title + description on every public route)",
+      "index": 5,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Per-route Greek-primary metadata (unique title + description on every public route)",
+      "index": 6,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Per-route Greek-primary metadata (unique title + description on every public route)",
+      "index": 7,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Per-route Greek-primary metadata (unique title + description on every public route)",
+      "index": 8,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T4",
+      "task_title": "Root metadata defaults (metadataBase + OG) + privacy-respecting analytics",
+      "index": 0,
+      "type": "file-exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T4",
+      "task_title": "Root metadata defaults (metadataBase + OG) + privacy-respecting analytics",
+      "index": 1,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T4",
+      "task_title": "Root metadata defaults (metadataBase + OG) + privacy-respecting analytics",
+      "index": 2,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T4",
+      "task_title": "Root metadata defaults (metadataBase + OG) + privacy-respecting analytics",
+      "index": 3,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T4",
+      "task_title": "Root metadata defaults (metadataBase + OG) + privacy-respecting analytics",
+      "index": 4,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T4",
+      "task_title": "Root metadata defaults (metadataBase + OG) + privacy-respecting analytics",
+      "index": 5,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { requestPasswordReset, initialAccountState } from "@/lib/account-actions";
+import { requestPasswordReset } from "@/lib/account-actions";
 import { useLang } from "@/components/LanguageProvider";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { Icon } from "@/components/icons";
@@ -10,7 +10,7 @@ export default function ForgotPasswordPage() {
   const { t } = useLang();
   const [state, formAction, isPending] = useActionState(
     requestPasswordReset,
-    initialAccountState,
+    { ok: false, error: null },
   );
 
   return (

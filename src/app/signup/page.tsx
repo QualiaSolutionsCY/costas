@@ -1,14 +1,14 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { signUp, initialAccountState } from "@/lib/account-actions";
+import { signUp } from "@/lib/account-actions";
 import { useLang } from "@/components/LanguageProvider";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { Icon } from "@/components/icons";
 
 export default function SignUpPage() {
   const { t } = useLang();
-  const [state, formAction, isPending] = useActionState(signUp, initialAccountState);
+  const [state, formAction, isPending] = useActionState(signUp, { ok: false, error: null });
   const [clientError, setClientError] = useState<string | null>(null);
 
   const errorMessage = clientError

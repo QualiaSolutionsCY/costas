@@ -11,8 +11,8 @@ import { createClient } from "@/lib/supabase/server";
  * machine-readable token the page maps to a bilingual message via i18n.
  */
 export type AccountState = { ok: boolean; error: string | null };
-
-export const initialAccountState: AccountState = { ok: false, error: null };
+// NOTE: the initial state is inlined at each useActionState call site — a
+// "use server" file may only export async functions (not objects), per Next 16.
 
 const signUpSchema = z
   .object({

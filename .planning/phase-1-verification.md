@@ -1,7 +1,7 @@
-# M2 Phase 1 Verification — Admin Surface & Data Layer
+# M3 Phase 1 Verification — Real Sign-up & Auth Lifecycle
 
-**Verdict: PASS** (2026-06-29) — build clean (tsc 0 errors), contract-runner 10/10.
+**Verdict: PASS** (2026-06-29) — build clean (tsc 0), contract-runner 13/13, EL/EN 149/149. Trigger validated end-to-end (test signup → role=owner, auto-confirmed, profile created).
 
-- VERIF-01/07: `/admin` gated by `getSessionRole()==='admin'` → `redirect('/')` for non-admins (no admin data in response) — `src/app/admin/page.tsx`. Admin role recognized in `src/lib/session.ts`; sign-in routes admin→/admin in `src/lib/auth-actions.ts`.
-- VERIF-02: pending workshops listed with name, serial, registration date, 60s signed cert URL — `src/app/admin/page.tsx` + `src/components/AdminReviewList.tsx`.
-- Schema: `workshops.status|reviewed_at|rejection_reason` + admin RLS policy applied (migration 0006, live). Types extended. EL/EN parity maintained.
+- ACCT-01: `/signup` → `supabase.auth.signUp()`; migration 0007 trigger stamps `app_metadata.role='owner'` + auto-confirms (no service-role key needed). `src/app/signup/page.tsx`, `src/lib/account-actions.ts`.
+- ACCT-02: duplicate email → bilingual `errEmailExists`; password mismatch caught client + server.
+- ACCT-03: `/forgot-password` → `resetPasswordForEmail`; `/auth/reset-password` exchanges code + `updateUser({password})`; `changePassword` reusable for settings security. `src/app/auth/reset-password/`.

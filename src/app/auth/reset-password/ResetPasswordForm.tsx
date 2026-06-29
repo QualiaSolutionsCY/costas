@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { initialAccountState, type AccountState } from "@/lib/account-actions";
+import { type AccountState } from "@/lib/account-actions";
 import { useLang } from "@/components/LanguageProvider";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { Icon } from "@/components/icons";
@@ -27,7 +27,7 @@ export function ResetPasswordForm({
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(
     action,
-    initialAccountState,
+    { ok: false, error: null },
   );
   const [mismatch, setMismatch] = useState(false);
 

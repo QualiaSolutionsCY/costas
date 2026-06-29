@@ -2,6 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import { changePassword } from "@/lib/account-actions";
 import { ResetPasswordForm } from "./ResetPasswordForm";
 
+// Exchanges the reset code for a session at request time — never prerender.
+export const dynamic = "force-dynamic";
+
 // Reset-completion route: the reset email links here with a ?code= param.
 // We exchange that code for a session SERVER-SIDE (same PKCE seam as
 // /auth/callback) so the subsequent changePassword → updateUser runs against

@@ -1,22 +1,33 @@
-# Roadmap · Milestone 2 · Verification & Trust
+# Roadmap · Milestone 3 · Accounts & Settings
 
 **Project:** Costas — Car Service Log
-**Milestone:** 2 of 6 (CURRENT)
+**Milestone:** 3 of 6 (CURRENT)
 **Created:** 2026-06-29
 **Phases:** 2
-**Requirements covered:** VERIF-01, VERIF-02, VERIF-03, VERIF-04, VERIF-05, VERIF-06, VERIF-07
+**Requirements covered:** ACCT-01, ACCT-02, ACCT-03, ACCT-04, ACCT-05, ACCT-06, ACCT-07, ACCT-08, ACCT-09, ACCT-10
 
-See `JOURNEY.md` for the full project arc. This file covers Milestone 2's phases only.
+See `JOURNEY.md` for the full project arc. This file covers Milestone 3's phases only.
 
 ## Context
 
-M1 ("Make It Real") is shipped. Workshops can register and upload certificates, but nothing approves them — the trust layer is missing. The `admin@costas.com` account and `admin` role already exist in `app_metadata`. This milestone builds the admin review surface and the verified badge, making workshop credentials real and visible.
+M1 ("Make It Real") and M2 ("Verification & Trust") are shipped. The platform has a real backend, real auth, and a working admin approval pipeline — but every real user account is still a seeded demo credential. The optional-login model (M1 migration `0004_demo_no_login_public_access`) lets anonymous callers use the app, but there is no way to register as a new owner, recover a forgotten password, or manage vehicles beyond adding them. The `SettingsPanel` in `AppShell.tsx` shows only language preference and an About row. This milestone replaces the seeded-account assumption with a real self-service lifecycle and turns the stub `settings` nav into a real surface.
+
+**Foundation available:**
+- `@supabase/ssr` client + server + middleware already wired (`lib/supabase/`)
+- `app_metadata.role` authorization pattern established (`session.ts` `getSessionRole()`)
+- `auth-actions.ts` `signIn` / `signOut` server actions with `useActionState` pattern
+- `profiles` table (id, full_name, role, created_at) with `profiles_select_own` + `profiles_update_own` RLS policies
+- `vehicles` table with owner RLS (select/insert/update own) + anonymous demo policies
+- `handle_new_user()` trigger auto-creates a `profiles` row on signup
+- Login page (`/login`) with Zod validation, bilingual strings, and design-system form components
 
 ## Exit Criteria
 
-- An admin can sign in to `/admin`, see the list of pending workshop registrations with certificate preview, and approve or reject each with a reason.
-- Approved workshops display a "certified" badge (EL + EN) on every surface where workshops appear.
-- A non-admin user navigating to `/admin` is redirected and never receives admin data.
+- A new user can sign up with email + password at `/signup` and is immediately placed in the owner flow with `role = owner` in `app_metadata`.
+- Password reset works end-to-end: request form → Supabase sends reset email → user follows link → sets new password → is redirected to login.
+- A signed-in owner can view and edit their profile (display name, phone) from settings; changes persist across sessions.
+- An owner can add, edit, and remove vehicles from settings; removing requires a confirmation prompt.
+- The settings page is real, covers three panels (Profile, Vehicles, Security), and is reachable from the sidebar `settings` nav item.
 
 ---
 
@@ -24,78 +35,93 @@ M1 ("Make It Real") is shipped. Workshops can register and upload certificates, 
 
 | # | Phase | Goal | Requirements | Status |
 |---|-------|------|--------------|--------|
-| 1 | Admin Surface & Data Layer | Extend the schema with verification fields, protect `/admin` by role, and deliver the pending-workshops review list with cert access | VERIF-01, VERIF-02, VERIF-07 | ready |
-| 2 | Approve / Reject Actions & Badge | Wire the approve and reject server actions, propagate the `verified` badge to every workshop surface, and distinguish unverified / rejected workshops visually | VERIF-03, VERIF-04, VERIF-05, VERIF-06 | — |
+| 1 | Real Sign-up & Auth Lifecycle | Deliver self-service registration, password reset, and in-settings password change so real users can create and maintain accounts | ACCT-01, ACCT-02, ACCT-03 | ready |
+| 2 | Profile, Vehicles & Settings Surface | Wire the profile edit, full vehicle CRUD (edit + remove), active-vehicle switcher, and the real settings page that assembles all three panels | ACCT-04, ACCT-05, ACCT-06, ACCT-07, ACCT-08, ACCT-09, ACCT-10 | — |
 
 ---
 
 ## Phase Details
 
-### Phase 1: Admin Surface & Data Layer
+### Phase 1: Real Sign-up & Auth Lifecycle
 
-**Goal:** The `admin@costas.com` user can sign in, land on a protected `/admin` route, and see every pending workshop registration with the ability to preview or download the uploaded certificate — without any non-admin user being able to reach the route or its data.
+**Goal:** Any visitor can register as an owner with email + password; existing users can request a password-reset email and follow the link to set a new password; signed-in users can change their password from within the app — with all surfaces in EL/EN and fully integrated into the existing auth pattern.
 
 **Requirements covered:**
-- VERIF-01: Admin user signs in and lands on a dedicated admin review surface.
-- VERIF-02: Admin sees all pending workshop registrations (name, serial, cert preview/download).
-- VERIF-07: `/admin` is protected by RLS + middleware; non-admin receives 403 / redirect, never data.
+- ACCT-01: A new owner can register with email + password; the account is created with `role = owner` in `app_metadata`.
+- ACCT-02: A user can request a password-reset email and follow the link to set a new password.
+- ACCT-03: A signed-in user can change their password from the settings surface.
 
 **Success criteria** (observable):
-1. Navigating to `/admin` while signed in as `admin@costas.com` renders the admin dashboard; navigating as `owner@…` or `mechanic@…` returns a redirect to `/` (no admin data in the response body).
-2. The admin dashboard lists every workshop with `status = pending` and shows: workshop name, certificate serial, registration timestamp, and a link or inline preview of the uploaded certificate (signed URL from `workshop-certs` bucket).
-3. The `workshops` table migration adds `status` (enum: `pending | verified | rejected`, default `pending`), `reviewed_at` (timestamptz, nullable), and `rejection_reason` (text, nullable); all existing rows default to `pending`; RLS policy allows `SELECT` on all rows only to `app_metadata.role = admin`.
-4. TypeScript compiles (`npx tsc --noEmit`) with no errors after the migration and new route are added.
+1. Visiting `/signup` renders a bilingual form (email, password, confirm password). Submitting valid credentials calls `supabase.auth.signUp()` server-side, auto-sets `app_metadata.role = owner` via a Supabase `auth.users` trigger or `admin.updateUserById` in the signup server action, auto-confirms the user (matching M1's `enable_signup` + `autoconfirm` settings), and redirects to `/` — the owner dashboard.
+2. A signup attempt with an already-registered email returns an inline bilingual error message; mismatched passwords are caught client-side before submission.
+3. Visiting `/forgot-password` and submitting a registered email calls `supabase.auth.resetPasswordForEmail()` server-side; the user sees a confirmation message in EL/EN ("Check your inbox"). Clicking the reset link in the email lands on `/auth/reset-password` with a valid `code` query parameter.
+4. On `/auth/reset-password` the user can type a new password and submit; `supabase.auth.exchangeCodeForSession()` + `updateUser({ password })` complete the reset; the user is redirected to `/login` with a success toast.
+5. `npx tsc --noEmit` exits 0 after all new routes and server actions are added; no `TODO` or `FIXME` markers remain in touched files.
 
 **Build notes:**
-- Middleware check: read `app_metadata.role` via `getClaims()` (already established in M1 patterns); redirect non-admin at the middleware layer before the route renders.
-- The `workshop-certs` bucket is private (M1 migration). Generate signed URLs server-side for each cert row using `createSignedUrl` with a short TTL (e.g. 60s) — never expose the service role key client-side.
-- Admin RLS policy: `CREATE POLICY "admin_all" ON workshops FOR ALL TO authenticated USING ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')` — scoped to admin only, separate from the existing mechanic/owner policies.
-- New migration file: `supabase/migrations/{timestamp}_workshop_verification.sql`.
+- Sign-up server action: call `supabase.auth.admin.createUser()` (using the service role key — server only) with `app_metadata: { role: 'owner' }` and `email_confirm: true`. This is the correct approach to stamp `app_metadata` at creation; `signUp()` alone cannot set `app_metadata` without an admin call.
+- The `handle_new_user()` trigger already creates the `profiles` row on `auth.users` insert — no extra insert needed in the server action.
+- Forgot-password page: a standalone route `/forgot-password` with a single email field, not inside the AppShell (unauthenticated surface). Style matches the existing `/login` card pattern.
+- Auth callback: the existing `/auth/callback/route.ts` handles the PKCE code exchange; `/auth/reset-password` is a new route that reads `?code=` from the URL, calls `exchangeCodeForSession`, then renders the new-password form.
+- Password change from settings (ACCT-03): implemented as a server action in the new `account-actions.ts` file — calls `supabase.auth.updateUser({ password: newPassword })` with the current session. This is Phase 2's settings surface entry point; the form component is built here, wired in Phase 2.
+- Add `signUpLink` (EL: "Εγγραφή", EN: "Sign up") and `forgotPassword` (EL: "Ξέχασα τον κωδικό", EN: "Forgot password") keys to `lib/i18n.ts` in both languages; a missing translation is already a type error.
 
-**Depends on:** M1 (workshops table, workshop-certs bucket, app_metadata.role pattern, @supabase/ssr setup)
+**Depends on:** M1 + M2 (Supabase setup, `@supabase/ssr` pattern, `auth-actions.ts`, `/auth/callback` route, design tokens)
 
 ---
 
-### Phase 2: Approve / Reject Actions & Badge
+### Phase 2: Profile, Vehicles & Settings Surface
 
-**Goal:** The admin can approve or reject a workshop from the review surface; the action persists to the database with a timestamp; and approved workshops display a "certified" badge everywhere workshops are shown, while unverified or rejected workshops are visually distinguished.
+**Goal:** A signed-in owner can view and edit their profile (name, phone), perform full CRUD on their vehicles (add / edit / remove with confirmation), switch the active vehicle to scope the service log, and reach all three capabilities from a real settings page wired to the sidebar `settings` nav item — with all strings bilingual and all states (loading, empty, error, confirm) handled.
 
 **Requirements covered:**
-- VERIF-03: Admin approves a workshop; `status` changes to `verified`, `reviewed_at` is set.
-- VERIF-04: Admin rejects a workshop with a reason; `status` changes to `rejected`, `rejection_reason` is stored.
-- VERIF-05: Verified workshop displays a "certified" badge (EL + EN) on all workshop surfaces.
-- VERIF-06: Unverified / rejected workshops are visually distinguishable from certified ones.
+- ACCT-04: An owner can view and edit their profile (display name, phone).
+- ACCT-05: Profile changes persist to `profiles` and are visible on next sign-in.
+- ACCT-06: An owner can add a new vehicle (plate, make, model, year) to their account.
+- ACCT-07: An owner can edit an existing vehicle's details.
+- ACCT-08: An owner can remove a vehicle from their account (with confirmation prompt).
+- ACCT-09: An owner with multiple vehicles can switch the active vehicle; the service log and history scope to the selected vehicle.
+- ACCT-10: The currently stubbed `settings` nav links to a real settings page covering profile, vehicle management, and password change.
 
 **Success criteria** (observable):
-1. Clicking "Approve" on a pending workshop calls the server action, transitions `status` to `verified`, sets `reviewed_at` to now, and the workshop moves out of the pending list in the UI without a full page reload.
-2. Clicking "Reject" opens a reason input; submitting calls the server action, transitions `status` to `rejected`, stores `rejection_reason`, and the workshop moves out of the pending list.
-3. On the mechanic view and on any owner-facing service history entry that references a workshop, a "Πιστοποιημένο / Certified" badge is visible next to verified workshops; pending and rejected workshops show a "Σε αναμονή / Pending" or "Απορρίφθηκε / Rejected" indicator instead.
-4. The badge and status indicators respect the existing design token system (no hardcoded hex; use `positive` green for verified, `muted` for pending, destructive for rejected); bilingual strings added to `lib/i18n.ts`.
-5. A non-admin server action call (e.g., crafted fetch with a non-admin JWT) returns a 403 error — the action verifies `app_metadata.role = admin` server-side before touching the DB.
+1. Clicking "Settings" in the sidebar renders a real settings page (not the current `SettingsPanel` stub) with three sections: **Profile**, **Vehicles**, and **Security**. A signed-out visitor sees a prompt to sign in; a signed-in owner sees their data.
+2. On the Profile section, editing display name or phone and saving calls the `updateProfile` server action, which writes to `profiles` via `profiles_update_own` RLS policy. After saving, the updated name is visible in the profile section immediately (optimistic or revalidate) and persists after a hard refresh.
+3. The `profiles` table gains a `phone` column via a new migration (`0007_profiles_phone.sql`) — `text, nullable`. The `updateProfile` action validates name (min 1, max 80) and phone (optional, E.164 or local format, max 20) with Zod before writing.
+4. On the Vehicles section, an owner can tap "Edit" on any vehicle row — an inline form pre-filled with plate, make/model, and year allows updating and saving via `updateVehicle` server action; the row updates without full page reload. Tapping "Remove" opens a bilingual confirmation dialog ("Are you sure? / Είσαι σίγουρος?"); confirming calls `removeVehicle` which deletes the row; the vehicle disappears from the list.
+5. An owner with 2+ vehicles can click any vehicle in the Vehicles section (or in the existing vehicle switcher on the log panel) to set it as the active vehicle; the service log and history immediately scope to that vehicle's `service_entries`. Active vehicle identity persists across a page reload (stored in a server-set cookie or URL param — not localStorage, to avoid hydration mismatch).
+6. The Password Change sub-section in Security calls the `changePassword` server action (built in Phase 1) from a two-field form (new password + confirm); success shows a bilingual confirmation; an error (e.g. weak password rejected by Supabase) shows the Supabase error message in EL/EN.
+7. `npx tsc --noEmit` exits 0; no `TODO`/`FIXME`/placeholder markers remain in touched files; every new i18n key is present in both `el` and `en` dictionaries.
 
 **Build notes:**
-- Server actions: `approveWorkshop(workshopId)` and `rejectWorkshop(workshopId, reason)` — both check `getClaims()` for `role = admin` before executing; return typed results.
-- Badge component: a small inline chip reusing existing token primitives (`surface`, `positive`, `muted`). Add EL key `certified` / `pending_review` / `rejected` to the i18n dictionary.
-- Propagation points: (a) mechanic's own workshop header (already rendered in M1 mechanic view), (b) the `place` field in the owner's service history entries where the workshop name is shown. Grep `workshops` references in `src/` to find all render sites before building.
-- Optimistic UI: use React `useOptimistic` (available in React 19) on the admin list so the row transitions immediately on action click without a loading spinner blocking the list.
+- `profiles` currently lacks a `phone` column — add it in migration `0007_profiles_phone.sql`. The existing `profiles_update_own` policy covers the new column with no changes needed.
+- `updateVehicle` and `removeVehicle` server actions go in `owner-actions.ts` alongside the existing `addVehicle`. Schemas: `vehicleEditSchema` (id + model + plate, optional year) and `vehicleRemoveSchema` (id only), both Zod-validated. RLS already covers update/delete via `vehicles_update_owner` (from migration `0001`); add `vehicles_delete_owner` if not already present (check: `0001` has no delete policy — add one in `0007`).
+- Active vehicle switcher: the existing `ServiceLog` component receives `vehicles` and `initialEntries` as props from the server page. To scope on switch, pass `activeVehicleId` as a cookie-backed URL search param (`?v={id}`), read it in `page.tsx` to hydrate the correct initial entries, and let the client's existing vehicle-switch handler append `?v=` on navigation. This avoids a full rewrite of the client state model.
+- The Settings surface replaces the `SettingsPanel` function in `AppShell.tsx` — the existing `active === "settings"` branch should render a new `<SettingsPage>` server component (streamed from the layout) rather than the inline `SettingsPanel`. Since `AppShell` is a client component, the cleanest approach is to make the settings panel a separate route (`/settings`) and navigate to it on sidebar click, matching the owner-only gate pattern from M2.
+- Vehicle add form already exists (M1 `addVehicle`); the year field is new — add `year` (integer, optional, 1900–2030) to `vehicleSchema` and to the `vehicles` table via `0007` migration.
+- Language: add i18n keys for `editVehicle`, `removeVehicle`, `confirmRemove`, `confirmRemoveHint`, `profileSection`, `vehiclesSection`, `securitySection`, `phoneLabel`, `phonePlaceholder`, `saveProfile`, `profileSaved`, `changePassword`, `currentPassword`, `newPassword`, `confirmPassword`, `passwordChanged` in both EL and EN.
 
-**Depends on:** Phase 1 (schema migration, admin route, RLS policy)
+**Depends on:** Phase 1 (account-actions.ts `changePassword`, `/auth/reset-password` pattern, signup server action)
 
 ---
 
 ## Coverage Verification
 
+Every requirement in this milestone maps to exactly one phase.
+
 | Requirement | Phase | Covered? |
 |-------------|-------|----------|
-| VERIF-01 | Phase 1 | ✓ |
-| VERIF-02 | Phase 1 | ✓ |
-| VERIF-03 | Phase 2 | ✓ |
-| VERIF-04 | Phase 2 | ✓ |
-| VERIF-05 | Phase 2 | ✓ |
-| VERIF-06 | Phase 2 | ✓ |
-| VERIF-07 | Phase 1 | ✓ |
+| ACCT-01 | Phase 1 | ✓ |
+| ACCT-02 | Phase 1 | ✓ |
+| ACCT-03 | Phase 1 | ✓ |
+| ACCT-04 | Phase 2 | ✓ |
+| ACCT-05 | Phase 2 | ✓ |
+| ACCT-06 | Phase 2 | ✓ |
+| ACCT-07 | Phase 2 | ✓ |
+| ACCT-08 | Phase 2 | ✓ |
+| ACCT-09 | Phase 2 | ✓ |
+| ACCT-10 | Phase 2 | ✓ |
 
-All 7 M2 requirements mapped. Unmapped: 0.
+All 10 M3 requirements mapped. Unmapped: 0.
 
 ---
 
@@ -103,11 +129,11 @@ All 7 M2 requirements mapped. Unmapped: 0.
 
 Triggered by `/qualia-milestone` after `/qualia-verify` passes on Phase 2:
 
-1. All phase artifacts are archived to `.planning/archive/milestone-2-verification-trust/`
+1. All phase artifacts are archived to `.planning/archive/milestone-3-accounts-settings/`
 2. `tracking.json` `milestones[]` gets a summary entry (num, name, phases_completed, shipped_url, closed_at)
-3. REQUIREMENTS.md marks VERIF-01..07 as **Complete**
-4. M3 (Accounts & Settings) opens — roadmapper regenerates this ROADMAP.md for Milestone 3
-5. `state.js init --force --milestone_name "Accounts & Settings"` resets current-phase fields, preserves lifetime + milestones[] history
+3. REQUIREMENTS.md marks ACCT-01..10 as **Complete**
+4. M4 (Booking & Scheduling) opens — roadmapper regenerates this ROADMAP.md for Milestone 4
+5. `state.js init --force --milestone_name "Booking & Scheduling"` resets current-phase fields, preserves lifetime + milestones[] history
 
 ---
 

@@ -1,109 +1,108 @@
 {
   "version": 1,
   "phase": 1,
-  "goal": "admin@costas.com can sign in, land on a protected /admin route, and review every PENDING workshop with certificate preview — no non-admin can reach the route or its data",
-  "why": "M1 captures workshop registrations but nothing reviews them. This phase adds the verification data model and the read-only admin surface that the approve/reject actions in Phase 2 will act on.",
-  "generated_at": "2026-06-29T12:41:08Z",
+  "goal": "Any visitor can register as an owner with email+password; existing users can request a reset email and set a new password via the link; signed-in users can change their password — all bilingual EL/EN, integrated into the existing auth pattern.",
+  "why": "Replaces the seeded-account assumption with a real self-service lifecycle — the credibility line for the sales demo. Constraint: no service-role key, so admin.* APIs are forbidden; signup role is stamped by a DB trigger.",
+  "generated_at": "2026-06-29T14:42:23Z",
   "generated_by": "planner",
-  "source_plan_hash": "sha256:8dfb210205519c36e42380afb83f7e3f2f97f2a02240965ac7fa46da7c9be260",
+  "source_plan_hash": "sha256:2503b58b48ea1cb10da05103a052fe4bc23a337345d4e50e87ebfba0eb9d388d",
   "success_criteria": [
-    "Navigating to /admin as admin@costas.com renders the dashboard; navigating as owner/mechanic returns redirect('/') with no admin data in the body (VERIF-01, VERIF-07)",
-    "The dashboard lists every status='pending' workshop with name, serial, registration timestamp, and a signed-URL certificate preview link (VERIF-02)",
-    "Migration 0006_workshop_verification.sql adds status (pending|verified|rejected, default pending), reviewed_at, rejection_reason, and an admin-only RLS policy; existing rows default to pending (VERIF-07)",
-    "npx tsc --noEmit exits 0 after the migration types, role plumbing, and route are added",
-    "All new UI strings exist in BOTH el and en in lib/i18n.ts; no raw hex in the new JSX"
+    "/signup renders a bilingual email/password/confirm form; a valid submit creates an auto-confirmed user with app_metadata.role = 'owner' via the Task-1 trigger and redirects to /.",
+    "A duplicate-email signup returns an inline bilingual error; mismatched passwords are caught before submission.",
+    "/forgot-password submits a registered email, calls resetPasswordForEmail server-side, and shows a bilingual check-your-inbox confirmation.",
+    "/auth/reset-password?code=… exchanges the code, lets the user set a new password via changePassword, and redirects to /login.",
+    "changePassword exists in account-actions.ts and calls updateUser({ password }) with the current session — no service-role admin call anywhere.",
+    "npx tsc --noEmit exits 0 (proves every new i18n key has EL+EN parity); no TODO/FIXME in touched files."
   ],
   "tasks": [
     {
       "id": "T1",
-      "title": "Schema: workshop verification columns + admin RLS + typegen",
+      "title": "Signup role+confirm trigger migration",
       "wave": 1,
       "depends_on": [],
       "persona": "backend",
-      "files_modify": [
-        "src/lib/database.types.ts"
-      ],
+      "files_modify": [],
       "files_create": [
-        "supabase/migrations/0006_workshop_verification.sql"
+        "supabase/migrations/0007_signup_role_trigger.sql"
       ],
       "files_delete": [],
       "acceptance_criteria": [
-        "Migration adds status (text not null default 'pending' check in pending|verified|rejected), reviewed_at (timestamptz null), rejection_reason (text null) to public.workshops; existing rows default to pending",
-        "Migration adds admin-scoped RLS policy workshops_admin_all FOR ALL TO authenticated USING/WITH CHECK app_metadata.role = 'admin', leaving existing workshops_select_own/insert_own/update_own untouched",
-        "database.types.ts workshops Row/Insert/Update gain status, reviewed_at, rejection_reason with correct nullability",
-        "Migration header notes it is applied via Supabase MCP by operator, not the CLI"
+        "An auth.users email-provider row with no role in raw_app_meta_data ends up with raw_app_meta_data->>'role' = 'owner'.",
+        "The same row has email_confirmed_at set (non-null) so the new user can sign in immediately.",
+        "Only email-provider rows are touched and an existing role is never overwritten (admin/mechanic seeds unaffected)."
       ],
-      "action": "Create supabase/migrations/0006_workshop_verification.sql with three add-column statements (status with CHECK + default) and the workshops_admin_all policy exactly as specified; RLS already enabled in 0001 so do not re-enable. Hand-edit database.types.ts workshops block (lines 104-130) to add the three fields to Row/Insert/Update matching the migration. Do not run npx supabase gen types.",
+      "action": "Create SECURITY DEFINER function public.stamp_signup_owner_role(): when raw_app_meta_data->>'role' is null, set new.raw_app_meta_data via jsonb_set merging provider:email and role:owner, set new.email_confirmed_at := coalesce(new.email_confirmed_at, now()), return new. Attach as a BEFORE INSERT trigger on auth.users so it runs before on_auth_user_created. Operator applies via Supabase MCP after merge; builder writes the .sql only.",
       "context_files": [
         "supabase/migrations/0001_init_schema.sql",
-        "supabase/migrations/0003_allow_admin_role.sql",
-        "src/lib/database.types.ts"
+        "supabase/migrations/0003_allow_admin_role.sql"
       ],
       "verification": [
         {
-          "type": "grep-match",
-          "path": "supabase/migrations/0006_workshop_verification.sql",
-          "pattern": "status|reviewed_at|rejection_reason",
+          "type": "file-exists",
+          "path": "supabase/migrations/0007_signup_role_trigger.sql",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "supabase/migrations/0006_workshop_verification.sql",
-          "pattern": "workshops_admin_all",
+          "path": "supabase/migrations/0007_signup_role_trigger.sql",
+          "pattern": "before insert on auth.users",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/lib/database.types.ts",
-          "pattern": "reviewed_at",
+          "path": "supabase/migrations/0007_signup_role_trigger.sql",
+          "pattern": "email_confirmed_at",
           "expect": "present"
         }
       ]
     },
     {
       "id": "T2",
-      "title": "Extend role plumbing: getSessionRole + sign-in routing for admin",
+      "title": "Auth lifecycle server actions (signUp, resetPassword, changePassword)",
       "wave": 1,
       "depends_on": [],
-      "persona": "security",
-      "files_modify": [
-        "src/lib/session.ts",
-        "src/lib/auth-actions.ts"
+      "persona": "backend",
+      "files_modify": [],
+      "files_create": [
+        "src/lib/account-actions.ts"
       ],
-      "files_create": [],
       "files_delete": [],
       "acceptance_criteria": [
-        "getSessionRole() returns 'admin' when app_metadata.role is 'admin', still returns null for unrecognized/unauthenticated",
-        "SessionRole type is 'owner' | 'mechanic' | 'admin'",
-        "Successful admin sign-in redirects to /admin; mechanic to /mechanic; owner to /",
-        "Role is still read only from app_metadata, never user_metadata"
+        "signUp validates email+password(min 8)+confirm-match server-side; duplicate email returns { error: 'exists' }; success redirects to /.",
+        "requestPasswordReset validates email and calls resetPasswordForEmail with redirectTo /auth/reset-password; returns { sent: true } on a valid-format email without account enumeration.",
+        "changePassword validates new password (min 8)+confirm, calls updateUser({ password }) with the current session, returns { ok: true } or a mapped error."
       ],
-      "action": "In session.ts add 'admin' to the SessionRole union (line 4) and to the getSessionRole guard (line 40). In auth-actions.ts signIn, replace the final redirect ternary with redirect(role === 'admin' ? '/admin' : role === 'mechanic' ? '/mechanic' : '/'), keeping redirect() outside try/catch.",
+      "action": "Create a 'use server' module mirroring auth-actions.ts (Zod parse, await createClient, useActionState state shape, redirect outside try/catch). Export SignUpState, ResetRequestState, ChangePasswordState + initial consts. signUp uses supabase.auth.signUp, mapping user_already_exists to error exists. requestPasswordReset calls resetPasswordForEmail with redirectTo origin+/auth/reset-password. changePassword checks getUser then updateUser. No supabase.auth.admin anywhere.",
       "context_files": [
-        "src/lib/session.ts",
-        "src/lib/auth-actions.ts"
+        "src/lib/auth-actions.ts",
+        "src/lib/supabase/server.ts"
       ],
       "verification": [
         {
           "type": "grep-match",
-          "path": "src/lib/session.ts",
-          "pattern": "\"admin\"",
+          "path": "src/lib/account-actions.ts",
+          "pattern": "resetPasswordForEmail",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/lib/auth-actions.ts",
-          "pattern": "\"/admin\"",
+          "path": "src/lib/account-actions.ts",
+          "pattern": "updateUser",
           "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/account-actions.ts",
+          "pattern": "auth.admin",
+          "expect": "absent"
         }
       ]
     },
     {
       "id": "T3",
-      "title": "Protected /admin route: pending-workshops review list with cert preview",
+      "title": "Signup + forgot-password pages and i18n keys",
       "wave": 2,
       "depends_on": [
-        "T1",
         "T2"
       ],
       "persona": "frontend",
@@ -111,56 +110,101 @@
         "src/lib/i18n.ts"
       ],
       "files_create": [
-        "src/app/admin/page.tsx",
-        "src/components/AdminReviewList.tsx"
+        "src/app/signup/page.tsx",
+        "src/app/forgot-password/page.tsx"
       ],
       "files_delete": [],
       "acceptance_criteria": [
-        "/admin as admin@costas.com lists every status='pending' workshop with name, serial (mono/tabular-nums), registration timestamp, and a View certificate link opening the signed URL in a new tab",
-        "/admin as owner/mechanic/unauthenticated issues redirect('/') before any workshop data is fetched — no admin data in the body",
-        "Empty state (bilingual adminEmpty) renders when there are no pending workshops",
-        "All UI text via t.* present in both el and en; Greek-primary; no raw hex in JSX; certificate signed URLs use a 60s TTL via createSignedUrl"
+        "/signup renders a bilingual email/password/confirm card styled like /login; mismatched passwords caught client-side; duplicate-email shows inline bilingual error; valid submit redirects to /.",
+        "/forgot-password renders a single bilingual email field and shows a bilingual confirmation driven by state.sent after submit.",
+        "Both pages show LanguageToggle and a link back to /login; /login gains Sign up and Forgot password links.",
+        "npx tsc --noEmit passes, proving every new t.* key exists in both el and en."
       ],
-      "action": "Add admin i18n keys (adminTitle, adminSubtitle, adminPendingCount, adminColName, adminColSerial, adminColRegistered, adminEmpty) to the Translation type and both el/en dicts. Create src/app/admin/page.tsx (async server component): getSessionRole() then redirect('/') if not admin; query pending workshops; createSignedUrl(cert_path,60) per row; pass data to <AdminReviewList/>. Create src/components/AdminReviewList.tsx ('use client', useLang()) rendering cards plus the adminEmpty empty state.",
+      "action": "Add the ~20 auth-lifecycle i18n keys (signup, forgot-password, and T4's reset-completion strings — full list in phase-1-plan.md Task 3) to the Translation type and BOTH el and en dictionaries. Build src/app/signup/page.tsx ('use client', useActionState(signUp)) and src/app/forgot-password/page.tsx (useActionState(requestPasswordReset)) reusing the /login card classes and useLang. Add Sign up + Forgot password links to login/page.tsx using text-accent.",
       "context_files": [
         "src/app/login/page.tsx",
-        "src/lib/session.ts",
-        "src/lib/supabase/server.ts",
-        "src/lib/register-actions.ts",
-        "src/components/LanguageProvider.tsx",
+        "src/lib/account-actions.ts",
         "src/lib/i18n.ts",
         ".planning/DESIGN.md"
       ],
       "verification": [
         {
+          "type": "command-exit",
+          "command": "npx",
+          "args": [
+            "tsc",
+            "--noEmit"
+          ],
+          "expected_exit": 0
+        },
+        {
           "type": "grep-match",
-          "path": "src/app/admin/page.tsx",
-          "pattern": "getSessionRole",
+          "path": "src/app/signup/page.tsx",
+          "pattern": "useActionState\\(signUp",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/app/admin/page.tsx",
-          "pattern": "redirect\\(\"/\"\\)",
+          "path": "src/app/forgot-password/page.tsx",
+          "pattern": "requestPasswordReset",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/app/admin/page.tsx",
-          "pattern": "createSignedUrl",
+          "path": "src/app/login/page.tsx",
+          "pattern": "href=\"/signup\"",
+          "expect": "present"
+        }
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "Reset-password completion route",
+      "wave": 3,
+      "depends_on": [
+        "T2",
+        "T3"
+      ],
+      "persona": "frontend",
+      "files_modify": [],
+      "files_create": [
+        "src/app/auth/reset-password/page.tsx"
+      ],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "Visiting /auth/reset-password?code=<valid> exchanges the code server-side and renders a bilingual new-password form.",
+        "Submitting a valid matching password calls changePassword, succeeds, and redirects to /login.",
+        "A missing/invalid code shows a bilingual error with a back-to-login link instead of the form.",
+        "A weak password rejected by Supabase surfaces state.error === 'weak' as a bilingual inline message; mismatched passwords caught before submit."
+      ],
+      "action": "Async Server Component reads searchParams.code; if present, await createClient().auth.exchangeCodeForSession(code); on error render a bilingual invalid-link shell with a back link. On success render a 'use client' ResetPasswordForm using useActionState(changePassword) with new+confirm inputs and a mismatch guard; on state.ok router.push('/login') (keeps changePassword return-based for Phase 2). Reuse /login card classes and t.* strings; semantic tokens only.",
+      "context_files": [
+        "src/app/auth/callback/route.ts",
+        "src/lib/account-actions.ts",
+        "src/app/login/page.tsx",
+        ".planning/DESIGN.md"
+      ],
+      "verification": [
+        {
+          "type": "grep-match",
+          "path": "src/app/auth/reset-password/page.tsx",
+          "pattern": "exchangeCodeForSession",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/app/admin/page.tsx",
-          "pattern": "AdminReviewList",
+          "path": "src/app/auth/reset-password/page.tsx",
+          "pattern": "changePassword",
           "expect": "present"
         },
         {
-          "type": "grep-match",
-          "path": "src/lib/i18n.ts",
-          "pattern": "adminTitle",
-          "expect": "present"
+          "type": "command-exit",
+          "command": "npx",
+          "args": [
+            "tsc",
+            "--noEmit"
+          ],
+          "expected_exit": 0
         }
       ]
     }

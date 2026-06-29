@@ -1,22 +1,16 @@
-import { redirect } from "next/navigation";
 import { MechanicLog } from "@/components/MechanicLog";
-import { getSessionRole } from "@/lib/session";
-import { getMechanicRecentEntries } from "@/lib/mechanic-actions";
 
 export const metadata = {
   title: "Costas · Πλευρά Συνεργείου",
 };
 
-export default async function MechanicPage() {
-  const role = await getSessionRole();
-  if (!role) redirect("/welcome");
-  if (role === "owner") redirect("/");
-
-  const entries = await getMechanicRecentEntries();
-
+// No auth gate — login is optional. Anonymous mechanics can resolve a plate,
+// tap the car, and register a job. The visual flow lives entirely client-side
+// in MechanicLog; history loads per-plate via the getPlateHistory server action.
+export default function MechanicPage() {
   return (
     <div className="min-h-screen bg-background">
-      <MechanicLog initialEntries={entries} />
+      <MechanicLog />
     </div>
   );
 }

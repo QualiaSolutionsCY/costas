@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "phase": 3,
+  "goal": "Final QA: the booking feature (/book owner, /bookings workshop) is reachable from the UI; production build passes; review CRITICAL/HIGH resolved.",
+  "why": "Final-QA audit (HAND-09) found one HIGH: the M4 booking feature builds but is unreachable from UI navigation. Production build passes, 0 CRITICAL, security boundary clean. This phase resolves the navigation-wiring HIGH.",
+  "generated_at": "2026-06-29T18:00:00Z",
+  "generated_by": "manual",
+  "source_plan_hash": "sha256:055b864d88b6ffaeee1f8819e3a6f473eee487226bd047dead580d314cc82611",
+  "success_criteria": [
+    "/book reachable from owner sidebar nav; /bookings reachable from workshop surface.",
+    "EL/EN parity preserved (new nav label in both locales); Translation type compiles.",
+    "npx tsc --noEmit exits 0 and npx next build compiles.",
+    "No CRITICAL/HIGH remaining from the Final-QA audit (booking-reachability HIGH closed)."
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Wire the booking feature into navigation",
+      "wave": 1,
+      "depends_on": [],
+      "persona": "frontend",
+      "files_modify": [
+        "src/lib/data.ts",
+        "src/components/AppShell.tsx",
+        "src/lib/i18n.ts",
+        "src/components/MechanicLog.tsx"
+      ],
+      "files_create": [],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "Owner sidebar shows a Booking nav item (calendar icon) routing to /book via router.push.",
+        "Workshop MechanicLog has a visible link to /bookings alongside /register.",
+        "nav.book added to both el and en locales; EL/EN parity preserved.",
+        "npx tsc --noEmit exits 0; npx next build compiles."
+      ],
+      "action": "Add 'book' to NavKey + navItems (calendar icon) in src/lib/data.ts; extend nav type + add book label to both locale nav objects in src/lib/i18n.ts; add a book->/book router.push branch in AppShell.select; add a <Link href=\"/bookings\"> in MechanicLog header near the /register link reusing an existing bookings i18n key or adding one to both locales.",
+      "context_files": [
+        "src/lib/data.ts",
+        "src/components/AppShell.tsx",
+        "src/lib/i18n.ts",
+        "src/components/MechanicLog.tsx",
+        "src/components/Sidebar.tsx"
+      ],
+      "verification": [
+        { "type": "grep-match", "path": "src/lib/data.ts", "pattern": "\"book\"", "expect": "present" },
+        { "type": "grep-match", "path": "src/components/AppShell.tsx", "pattern": "\"/book\"", "expect": "present" },
+        { "type": "grep-match", "path": "src/components/MechanicLog.tsx", "pattern": "\"/bookings\"", "expect": "present" }
+      ]
+    }
+  ]
+}

@@ -28,6 +28,7 @@ export function ReminderPrefs({
   const { t } = useLang();
   const [state, action, pending] = useActionState(updateReminderPrefs, {
     ok: false,
+    error: false,
   });
 
   if (prefs === null) {
@@ -81,6 +82,8 @@ export function ReminderPrefs({
             <Icon name="check" className="h-4 w-4" />
             {t.reminderPrefsSaved}
           </p>
+        ) : state.error ? (
+          <p className="text-xs font-medium text-negative">{t.errSave}</p>
         ) : null}
 
         <button type="submit" disabled={pending} className={PRIMARY_BTN}>

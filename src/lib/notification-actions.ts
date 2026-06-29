@@ -21,20 +21,20 @@ const dismissSchema = z.object({
  * Server Action for useActionState: validates and records a reminder dismissal
  * for its current cycle. Upsert with ignoreDuplicates makes a repeat dismiss a
  * no-op. revalidatePath('/') + revalidatePath('/reminders') refresh the badge
- * and the reminders list. Returns {ok:true} on success, {ok:false} on any
- * parse/db error.
+ * and the reminders list. Returns {ok:true,error:false} on success,
+ * {ok:false,error:true} on any parse/db error.
  */
 export async function dismissReminder(
-  _prev: { ok: boolean },
+  _prev: { ok: boolean; error: boolean },
   formData: FormData,
-): Promise<{ ok: boolean }> {
+): Promise<{ ok: boolean; error: boolean }> {
   const parsed = dismissSchema.safeParse({
     vehicle_id: formData.get("vehicle_id"),
     reminder_kind: formData.get("reminder_kind"),
     due_on: formData.get("due_on"),
   });
 
-  if (!parsed.success) return { ok: false };
+  if (!parsed.success) return { ok: false, error: true };
 
   const user = await getUser();
   const supabase = await createClient();
@@ -51,9 +51,9 @@ export async function dismissReminder(
       { onConflict: "vehicle_id,reminder_kind,due_on", ignoreDuplicates: true },
     );
 
-  if (error) return { ok: false };
+  if (error) return { ok: false, error: true };
 
   revalidatePath("/");
   revalidatePath("/reminders");
-  return { ok: true };
+  return { ok: true, error: false };
 }

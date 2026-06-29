@@ -53,22 +53,22 @@ const prefsSchema = z.object({
  * own reminder preferences. Checkboxes arrive as 'on' when checked, absent
  * (null) otherwise. RLS confines the write to `auth.uid()`. Revalidates the
  * settings page and the log root so reminder surfaces refresh. Returns
- * {ok:true} on success, {ok:false} on any failure.
+ * {ok:true,error:false} on success, {ok:false,error:true} on any failure.
  */
 export async function updateReminderPrefs(
-  _prev: { ok: boolean },
+  _prev: { ok: boolean; error: boolean },
   formData: FormData,
-): Promise<{ ok: boolean }> {
+): Promise<{ ok: boolean; error: boolean }> {
   const parsed = prefsSchema.safeParse({
     inapp: formData.get("inapp"),
     email: formData.get("email"),
     advance_days: formData.get("advance_days"),
   });
 
-  if (!parsed.success) return { ok: false };
+  if (!parsed.success) return { ok: false, error: true };
 
   const user = await getUser();
-  if (!user) return { ok: false };
+  if (!user) return { ok: false, error: true };
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -80,9 +80,9 @@ export async function updateReminderPrefs(
     })
     .eq("id", user.id);
 
-  if (error) return { ok: false };
+  if (error) return { ok: false, error: true };
 
   revalidatePath("/settings");
   revalidatePath("/");
-  return { ok: true };
+  return { ok: true, error: false };
 }

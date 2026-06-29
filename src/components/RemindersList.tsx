@@ -51,7 +51,7 @@ export function RemindersList({ reminders }: { reminders: Reminder[] }) {
 
 function ReminderRow({ reminder }: { reminder: Reminder }) {
   const { t } = useLang();
-  const [, action, pending] = useActionState(dismissReminder, { ok: false });
+  const [state, action, pending] = useActionState(dismissReminder, { ok: false, error: false });
 
   const isMot = reminder.kind === "mot";
   const title = isMot ? t.reminderMot : t.reminderService;
@@ -78,21 +78,26 @@ function ReminderRow({ reminder }: { reminder: Reminder }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
             <p className="text-sm font-semibold">{title}</p>
-            <form action={action}>
-              <input type="hidden" name="vehicle_id" value={reminder.vehicleId} />
-              <input type="hidden" name="reminder_kind" value={reminder.kind} />
-              <input type="hidden" name="due_on" value={reminder.dueOn} />
-              <button
-                type="submit"
-                disabled={pending}
-                className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-surface-2 disabled:opacity-40"
-              >
-                {pending ? (
-                  <Icon name="spinner" className="h-3.5 w-3.5" />
-                ) : null}
-                {t.reminderDismiss}
-              </button>
-            </form>
+            <div className="flex items-center gap-2">
+              {state.error ? (
+                <span className="text-[11px] font-medium text-negative">{t.errSave}</span>
+              ) : null}
+              <form action={action}>
+                <input type="hidden" name="vehicle_id" value={reminder.vehicleId} />
+                <input type="hidden" name="reminder_kind" value={reminder.kind} />
+                <input type="hidden" name="due_on" value={reminder.dueOn} />
+                <button
+                  type="submit"
+                  disabled={pending}
+                  className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-surface-2 disabled:opacity-40"
+                >
+                  {pending ? (
+                    <Icon name="spinner" className="h-3.5 w-3.5" />
+                  ) : null}
+                  {t.reminderDismiss}
+                </button>
+              </form>
+            </div>
           </div>
 
           <p className="mt-0.5 font-mono text-xs uppercase tracking-wider text-muted">

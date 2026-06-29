@@ -18,12 +18,40 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
         <Icon name="menu" />
       </button>
 
-      <h1 className="text-sm font-semibold">{t.topbarTitle}</h1>
+      <h1 className="hidden text-sm font-semibold sm:block">{t.topbarTitle}</h1>
+
+      <nav
+        aria-label={`${t.ownerView} / ${t.mechanicView}`}
+        className="inline-flex items-center rounded-lg border p-0.5"
+      >
+        <Link
+          href="/"
+          aria-current="page"
+          className="inline-flex items-center gap-1.5 rounded-md bg-foreground px-2.5 py-1 text-xs font-medium text-surface transition-colors"
+        >
+          <Icon name="car" className="h-3.5 w-3.5" />
+          <span>{t.ownerView}</span>
+        </Link>
+        <Link
+          href="/mechanic"
+          className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:text-foreground"
+        >
+          <Icon name="wrench" className="h-3.5 w-3.5" />
+          <span>{t.mechanicView}</span>
+        </Link>
+      </nav>
 
       <div className="ml-auto flex items-center gap-2">
         <Link
-          href="/register"
+          href="/login"
           className="hidden items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-surface-2 sm:inline-flex"
+        >
+          <Icon name="key" className="h-3.5 w-3.5 text-muted" />
+          {t.signInBtn}
+        </Link>
+        <Link
+          href="/register"
+          className="hidden items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-surface-2 md:inline-flex"
         >
           <Icon name="shield" className="h-3.5 w-3.5 text-positive" />
           {t.registerLink}

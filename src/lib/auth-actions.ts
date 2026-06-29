@@ -45,7 +45,9 @@ export async function signIn(
 
   const role = (data.user.app_metadata as { role?: unknown } | undefined)?.role;
 
-  redirect(role === "mechanic" ? "/mechanic" : "/");
+  redirect(
+    role === "admin" ? "/admin" : role === "mechanic" ? "/mechanic" : "/",
+  );
 }
 
 /**

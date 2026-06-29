@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 
-export type SessionRole = "owner" | "mechanic";
+export type SessionRole = "owner" | "mechanic" | "admin";
 
 /**
  * Returns the verified JWT claims for the current request, or null when there
@@ -37,5 +37,7 @@ export async function getUser() {
 export async function getSessionRole(): Promise<SessionRole | null> {
   const claims = await getClaims();
   const role = (claims?.app_metadata as { role?: unknown } | undefined)?.role;
-  return role === "owner" || role === "mechanic" ? role : null;
+  return role === "owner" || role === "mechanic" || role === "admin"
+    ? role
+    : null;
 }

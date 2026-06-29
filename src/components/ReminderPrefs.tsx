@@ -83,7 +83,7 @@ export function ReminderPrefs({
             {t.reminderPrefsSaved}
           </p>
         ) : state.error ? (
-          <p className="text-xs font-medium text-negative">{t.errSave}</p>
+          <p role="alert" className="text-xs font-medium text-negative">{t.errSave}</p>
         ) : null}
 
         <button type="submit" disabled={pending} className={PRIMARY_BTN}>

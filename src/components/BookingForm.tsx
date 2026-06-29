@@ -160,7 +160,7 @@ export function BookingForm({ workshops, vehicles, bookings }: Props) {
               {t.bookSent}
             </p>
           ) : state.error ? (
-            <p className="text-xs font-medium text-negative">{t.bookError}</p>
+            <p role="alert" className="text-xs font-medium text-negative">{t.bookError}</p>
           ) : null}
 
           <button

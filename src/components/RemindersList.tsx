@@ -80,7 +80,7 @@ function ReminderRow({ reminder }: { reminder: Reminder }) {
             <p className="text-sm font-semibold">{title}</p>
             <div className="flex items-center gap-2">
               {state.error ? (
-                <span className="text-[11px] font-medium text-negative">{t.errSave}</span>
+                <span role="alert" className="text-[11px] font-medium text-negative">{t.errSave}</span>
               ) : null}
               <form action={action}>
                 <input type="hidden" name="vehicle_id" value={reminder.vehicleId} />

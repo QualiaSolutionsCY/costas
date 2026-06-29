@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/session";
 import { SERVICE_CODES } from "@/lib/services";
+import { normalizePlate } from "@/lib/plate";
 
 // A single service entry on a vehicle's history, flattened for the mechanic
 // timeline. The persisted `service_code` is language-stable; the UI localizes it.
@@ -14,10 +15,6 @@ export type MechanicEntry = {
   serviced_on: string;
   kind: string;
 };
-
-function normalizePlate(plate: string): string {
-  return plate.trim().toUpperCase();
-}
 
 /**
  * The full service history for a plate, newest first. Resolves the vehicle by

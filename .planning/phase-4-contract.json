@@ -1,0 +1,223 @@
+{
+  "version": 1,
+  "phase": 4,
+  "goal": "Demo-grade finish and a live, verified production deployment — motion respects prefers-reduced-motion, every data-backed view has loading/empty/error states, dead-end nav is real or honestly labeled, and the live Vercel URL returns 200 with auth working in EL and EN.",
+  "why": "This is the demo that wins the client conversation; janky motion, a coming-soon dead-end, or a 500 on the live URL each undo the 'it's real' thesis, so polish and a verified deploy are the difference between a mockup and a product.",
+  "generated_at": "2026-06-29T10:40:55Z",
+  "generated_by": "planner",
+  "source_plan_hash": "sha256:8ad2faa17aa16cfa0a876ea5a0950b044f9db183071736fe83750cacc6fb3993",
+  "success_criteria": [
+    "With OS Reduce Motion on, popIn/sheetUp/slideIn do not animate; with it off, they play unchanged.",
+    "The vehicles nav shows the real persisted vehicle and settings shows real language + sign-out + account email; no fake 'coming soon' remains.",
+    "Owner history, mechanic recent entries, registration, and the two new panels each have loading, empty, and error states in product voice, EL and EN.",
+    "Every surface is usable at 375 / 768 / 1440px with no horizontal scroll and >=44px touch targets; ServiceSelect listbox a11y and drawer focus/Esc preserved.",
+    "The production Vercel URL returns HTTP 200; auth works live for both seeded roles with session persistence; EL/EN both render; Supabase prod has RLS on every table."
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Respect prefers-reduced-motion across all three animations",
+      "wave": 1,
+      "depends_on": [],
+      "persona": "frontend",
+      "files_modify": [
+        "src/app/globals.css"
+      ],
+      "files_create": [],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "With OS Reduce Motion enabled, opening the ServiceSelect popover/sheet shows no slide/scale transition.",
+        "With OS Reduce Motion enabled, opening the mobile drawer in AppShell shows no slide-in.",
+        "With Reduce Motion off, popIn, sheetUp, and slideIn play exactly as before — no visual regression."
+      ],
+      "action": "Add a global @media (prefers-reduced-motion: reduce) rule at the end of src/app/globals.css setting animation-duration, animation-iteration-count, transition-duration and scroll-behavior to near-zero with !important on *, *::before, *::after. This overrides the inline popIn/sheetUp styles in ServiceSelect.tsx:87,98 and the slideIn class in AppShell.tsx:35 without deleting keyframes or inline styles, preserving the non-reduced path.",
+      "context_files": [
+        "src/app/globals.css",
+        "src/components/ServiceSelect.tsx",
+        "src/components/AppShell.tsx",
+        ".planning/DESIGN.md"
+      ],
+      "verification": [
+        {
+          "type": "grep-match",
+          "path": "src/app/globals.css",
+          "pattern": "prefers-reduced-motion",
+          "expect": "present"
+        },
+        {
+          "type": "command-exit",
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "expected_exit": 0
+        }
+      ]
+    },
+    {
+      "id": "T2",
+      "title": "Resolve dead-end nav: real vehicles view, honest settings view",
+      "wave": 1,
+      "depends_on": [],
+      "persona": "frontend",
+      "files_modify": [
+        "src/components/AppShell.tsx",
+        "src/lib/i18n.ts"
+      ],
+      "files_create": [],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "Clicking vehicles shows the owner's real persisted vehicle (model + plate from the DB) as a card with loading and empty states — not a coming-soon screen.",
+        "Clicking settings shows account email, the language toggle, and a working Sign out button — no 'coming soon'.",
+        "Both new surfaces render in EL and EN with every string from lib/i18n.ts.",
+        "settings does not gain feature toggles, profile editing, or notification prefs — only language + sign-out + account email per the out-of-scope boundary."
+      ],
+      "action": "In AppShell.tsx replace the dead-end branch (line 20, else block 53-59) with a switch on active: vehicles renders a VehiclePanel reading the owner vehicle via the Phase-2 DB read (not the lib/data.ts car singleton) as a rounded-xl border bg-surface card with loading+empty states; settings renders a SettingsPanel with account email, the existing LanguageToggle, and a Sign out button. Add vehiclesTitle, settingsTitle, settingsAccount, signOut to the Translation type and both el/en blocks.",
+      "context_files": [
+        "src/components/AppShell.tsx",
+        "src/lib/i18n.ts",
+        "src/lib/data.ts",
+        "src/components/LanguageToggle.tsx",
+        "src/components/ServiceLog.tsx",
+        ".planning/DESIGN.md",
+        ".planning/PRODUCT.md"
+      ],
+      "verification": [
+        {
+          "type": "grep-match",
+          "path": "src/components/AppShell.tsx",
+          "pattern": "Coming soon|Σύντομα διαθέσιμο",
+          "expect": "absent"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/i18n.ts",
+          "pattern": "vehiclesTitle|settingsTitle|signOut",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/components/AppShell.tsx",
+          "pattern": "#[0-9a-fA-F]{6}",
+          "expect": "absent"
+        },
+        {
+          "type": "command-exit",
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "expected_exit": 0
+        }
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Audit & fix loading/empty/error states, responsive, a11y, and EL/EN across all surfaces",
+      "wave": 2,
+      "depends_on": [
+        "T2"
+      ],
+      "persona": "ux",
+      "files_modify": [
+        "src/components/ServiceLog.tsx",
+        "src/components/MechanicLog.tsx",
+        "src/components/RegisterForm.tsx",
+        "src/components/AppShell.tsx",
+        "src/lib/i18n.ts"
+      ],
+      "files_create": [],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "Owner history, mechanic recent entries, registration, and both Task-2 panels each show loading, product-voice empty, and human actionable error states.",
+        "At 375/768/1440px every surface is usable: no horizontal scroll, no clipped controls, touch targets >=44px.",
+        "Keyboard: ServiceSelect listbox a11y works, the mobile drawer traps focus and Esc closes it, every input has a label or aria-label.",
+        "EL and EN both render every string; npm run build passes."
+      ],
+      "action": "Read each data-backed component post-Phase-3; confirm loading/empty/error states exist (gap flagged at ServiceLog.tsx:82, MechanicLog.tsx:123). Add any missing empty state with the rounded-xl border-dashed bg-surface py-20 text-center pattern and product-voice copy from lib/i18n.ts. Wire failed server actions to a calm inline error (EL+EN). Check 375/768/1440 breakpoints, fix overflow with the existing max-w/px scale. Verify aria-label on inputs, drawer Esc-close, ServiceSelect focus return.",
+      "context_files": [
+        "src/components/ServiceLog.tsx",
+        "src/components/MechanicLog.tsx",
+        "src/components/RegisterForm.tsx",
+        "src/components/ServiceSelect.tsx",
+        "src/components/AppShell.tsx",
+        "src/lib/i18n.ts",
+        ".planning/DESIGN.md",
+        ".planning/PRODUCT.md",
+        ".planning/codebase/concerns.md"
+      ],
+      "verification": [
+        {
+          "type": "grep-match",
+          "path": "src/components/ServiceLog.tsx",
+          "pattern": "loading|isPending|empty|error",
+          "expect": "present"
+        },
+        {
+          "type": "command-exit",
+          "command": "npx",
+          "args": [
+            "tsc",
+            "--noEmit"
+          ],
+          "expected_exit": 0
+        },
+        {
+          "type": "command-exit",
+          "command": "npm",
+          "args": [
+            "run",
+            "build"
+          ],
+          "expected_exit": 0
+        }
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "Deploy to Vercel production and run the post-deploy verification checklist",
+      "wave": 3,
+      "depends_on": [
+        "T1",
+        "T2",
+        "T3"
+      ],
+      "persona": "backend",
+      "files_modify": [
+        ".planning/STATE.md"
+      ],
+      "files_create": [],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "App deployed to Vercel production via vercel --prod (GitHub auto-deploy stays disabled).",
+        "Production homepage returns HTTP 200.",
+        "Auth works on the live URL: seeded owner@ and mechanic@ land on the correct surface and session persists across refresh.",
+        "Both EL and EN render on the live URL.",
+        "Supabase production has migrations applied and RLS enabled on every table.",
+        ".planning/STATE.md records the live URL and a pass/fail line for each of the 5 deployment-checklist items."
+      ],
+      "action": "Confirm Vercel is linked (vercel whoami / vercel link). Sync prod env (vercel env pull); confirm SUPABASE URL + PUBLISHABLE key present, SERVICE_ROLE key server-side only. Deploy vercel --prod, capture the URL. Run the rules/deployment.md checklist: curl HTTP 200, live auth for both seeded roles with refresh persistence, no console errors, homepage under 0.5s. Verify Supabase prod migrations + RLS on all tables. Record results in STATE.md. Do not deploy if Task 3 build failed.",
+      "context_files": [
+        ".planning/STATE.md",
+        "rules/deployment.md",
+        "rules/infrastructure.md",
+        ".planning/PROJECT.md"
+      ],
+      "verification": [
+        {
+          "type": "behavioral",
+          "description": "On the deployed production URL, curl the homepage and confirm HTTP 200, then sign in as seeded owner@ (lands on owner surface) and mechanic@ (lands on mechanic surface), refresh to confirm session persistence, and toggle EL/EN to confirm both render.",
+          "evidence_required": [
+            {
+              "path": ".planning/STATE.md",
+              "description": "Live URL recorded with HTTP 200 result and pass/fail for each of the 5 deployment-checklist items",
+              "matcher": "https://"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -60,6 +60,68 @@ export type Translation = {
   registerAnother: string;
   registerLink: string;
   submitting: string;
+  // auth
+  loginTitle: string;
+  loginSubtitle: string;
+  emailLabel: string;
+  passwordLabel: string;
+  signInBtn: string;
+  signingIn: string;
+  signOut: string;
+  loginError: string;
+  demoHint: string;
+  // flow states / errors
+  placeLabel: string;
+  errService: string;
+  errPlate: string;
+  errSave: string;
+  loadError: string;
+  retry: string;
+  viewCert: string;
+  // owner: multi-vehicle + city + which-mechanic
+  cityLabel: string;
+  cityPlaceholder: string;
+  cities: string[];
+  mechanicLabel: string;
+  mechanicPlaceholder: string;
+  addVehicle: string;
+  vehicleModelPlaceholder: string;
+  vehiclePlatePlaceholder: string;
+  saveVehicle: string;
+  cancel: string;
+  selectVehicle: string;
+  // owner ⇄ mechanic toggle
+  ownerView: string;
+  mechanicView: string;
+  // mechanic: visual car flow
+  plateFirstHint: string;
+  tapWhatYouFixed: string;
+  suggestedService: string;
+  registerJob: string;
+  carHistory: string;
+  partWheels: string;
+  partBrakes: string;
+  partEngine: string;
+  partBody: string;
+  partLights: string;
+  partWindshield: string;
+  partSuspension: string;
+  partExhaust: string;
+  // onboarding intro
+  onbTitle: string;
+  onbSub: string;
+  onbFeat1: string;
+  onbFeat2: string;
+  onbFeat3: string;
+  onbStart: string;
+  // welcome / role chooser
+  welcomeTitle: string;
+  welcomeSubtitle: string;
+  roleOwnerTitle: string;
+  roleOwnerDesc: string;
+  roleMechTitle: string;
+  roleMechDesc: string;
+  useEmailInstead: string;
   // navigation panels
   vehiclesSubtitle: string;
   settingsSubtitle: string;
@@ -146,6 +208,61 @@ export const translations: Record<Lang, Translation> = {
     registerAnother: "Νέα εγγραφή",
     registerLink: "Εγγραφή συνεργείου",
     submitting: "Υποβολή…",
+    loginTitle: "Σύνδεση",
+    loginSubtitle: "Συνδέσου για να δεις το ιστορικό σου.",
+    emailLabel: "Email",
+    passwordLabel: "Κωδικός",
+    signInBtn: "Σύνδεση",
+    signingIn: "Σύνδεση…",
+    signOut: "Αποσύνδεση",
+    loginError: "Λάθος email ή κωδικός.",
+    demoHint: "Demo · owner@costas.demo ή mechanic@costas.demo · costas123",
+    placeLabel: "Πού έγινε;",
+    errService: "Διάλεξε υπηρεσία.",
+    errPlate: "Πρόσθεσε πινακίδα πριν αποθηκεύσεις.",
+    errSave: "Κάτι πήγε στραβά. Δοκίμασε ξανά.",
+    loadError: "Αποτυχία φόρτωσης.",
+    retry: "Δοκίμασε ξανά",
+    viewCert: "Προβολή πιστοποιητικού",
+    cityLabel: "Πόλη",
+    cityPlaceholder: "Διάλεξε πόλη",
+    cities: ["Λευκωσία", "Λεμεσός", "Λάρνακα", "Πάφος", "Αμμόχωστος", "Παραλίμνι", "Κερύνεια"],
+    mechanicLabel: "Συνεργείο / μηχανικός",
+    mechanicPlaceholder: "π.χ. AutoCheck",
+    addVehicle: "Προσθήκη οχήματος",
+    vehicleModelPlaceholder: "π.χ. VW Golf 2019",
+    vehiclePlatePlaceholder: "π.χ. ΚΧΡ 412",
+    saveVehicle: "Αποθήκευση",
+    cancel: "Άκυρο",
+    selectVehicle: "Επιλογή οχήματος",
+    ownerView: "Οδηγός",
+    mechanicView: "Συνεργείο",
+    plateFirstHint: "Βάλε πρώτα τον αριθμό πινακίδας.",
+    tapWhatYouFixed: "Διάλεξε τι έφτιαξες",
+    suggestedService: "Προτεινόμενη υπηρεσία",
+    registerJob: "Καταχώρηση στο όχημα",
+    carHistory: "Ιστορικό οχήματος",
+    partWheels: "Τροχοί / ελαστικά",
+    partBrakes: "Φρένα",
+    partEngine: "Κινητήρας",
+    partBody: "Αμάξωμα",
+    partLights: "Φώτα",
+    partWindshield: "Παρμπρίζ",
+    partSuspension: "Ανάρτηση",
+    partExhaust: "Εξάτμιση",
+    onbTitle: "Το βιβλίο σέρβις του αυτοκινήτου σου",
+    onbSub: "Όλο το ιστορικό σέρβις σε ένα μέρος — γραμμένο από τον οδηγό και το συνεργείο.",
+    onbFeat1: "Κατέγραψε κάθε σέρβις με πόλη και συνεργείο",
+    onbFeat2: "Ο μηχανικός καταχωρεί εργασίες οπτικά, πάνω στο αυτοκίνητο",
+    onbFeat3: "Ένα ιστορικό, και από τις δύο πλευρές του πάγκου",
+    onbStart: "Ξεκίνα",
+    welcomeTitle: "Καλώς ήρθες στο Costas",
+    welcomeSubtitle: "Πώς θα χρησιμοποιήσεις την εφαρμογή;",
+    roleOwnerTitle: "Είμαι οδηγός",
+    roleOwnerDesc: "Κράτα το ιστορικό σέρβις του αυτοκινήτου σου.",
+    roleMechTitle: "Είμαι μηχανικός",
+    roleMechDesc: "Καταχώρησε εργασίες στο ιστορικό των οχημάτων.",
+    useEmailInstead: "Σύνδεση με email",
     vehiclesSubtitle: "Τα οχήματα που παρακολουθείς.",
     settingsSubtitle: "Προτιμήσεις λογαριασμού.",
     openLog: "Άνοιγμα βιβλίου",
@@ -229,6 +346,61 @@ export const translations: Record<Lang, Translation> = {
     registerAnother: "New registration",
     registerLink: "Workshop registration",
     submitting: "Submitting…",
+    loginTitle: "Sign in",
+    loginSubtitle: "Sign in to see your history.",
+    emailLabel: "Email",
+    passwordLabel: "Password",
+    signInBtn: "Sign in",
+    signingIn: "Signing in…",
+    signOut: "Sign out",
+    loginError: "Wrong email or password.",
+    demoHint: "Demo · owner@costas.demo or mechanic@costas.demo · costas123",
+    placeLabel: "Where?",
+    errService: "Pick a service.",
+    errPlate: "Add a plate before saving.",
+    errSave: "Something went wrong. Try again.",
+    loadError: "Couldn't load.",
+    retry: "Try again",
+    viewCert: "View certificate",
+    cityLabel: "City",
+    cityPlaceholder: "Select city",
+    cities: ["Nicosia", "Limassol", "Larnaca", "Paphos", "Famagusta", "Paralimni", "Kyrenia"],
+    mechanicLabel: "Workshop / mechanic",
+    mechanicPlaceholder: "e.g. AutoCheck",
+    addVehicle: "Add vehicle",
+    vehicleModelPlaceholder: "e.g. VW Golf 2019",
+    vehiclePlatePlaceholder: "e.g. ΚΧΡ 412",
+    saveVehicle: "Save",
+    cancel: "Cancel",
+    selectVehicle: "Select vehicle",
+    ownerView: "Owner",
+    mechanicView: "Mechanic",
+    plateFirstHint: "Enter the plate number first.",
+    tapWhatYouFixed: "Tap what you fixed",
+    suggestedService: "Suggested service",
+    registerJob: "Register to vehicle",
+    carHistory: "Vehicle history",
+    partWheels: "Wheels / tyres",
+    partBrakes: "Brakes",
+    partEngine: "Engine",
+    partBody: "Body",
+    partLights: "Lights",
+    partWindshield: "Windshield",
+    partSuspension: "Suspension",
+    partExhaust: "Exhaust",
+    onbTitle: "Your car's service logbook",
+    onbSub: "The whole service history in one place — written from both the owner and the workshop.",
+    onbFeat1: "Log every service with city and workshop",
+    onbFeat2: "The mechanic logs jobs visually, right on the car",
+    onbFeat3: "One history, from both sides of the counter",
+    onbStart: "Get started",
+    welcomeTitle: "Welcome to Costas",
+    welcomeSubtitle: "How will you use the app?",
+    roleOwnerTitle: "I'm a car owner",
+    roleOwnerDesc: "Keep your car's full service history.",
+    roleMechTitle: "I'm a mechanic",
+    roleMechDesc: "Log jobs into vehicles' service history.",
+    useEmailInstead: "Sign in with email",
     vehiclesSubtitle: "The vehicles you're tracking.",
     settingsSubtitle: "Account preferences.",
     openLog: "Open log",

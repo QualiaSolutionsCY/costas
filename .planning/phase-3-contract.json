@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "phase": 3,
+  "goal": "Registration stops being a no-op — it persists a workshop row tied to the signed-in mechanic and stores the certificate in the private workshop-certs bucket, with the path saved to workshops.cert_path and the success screen reflecting the persisted values.",
+  "why": "Registration is the last dead-end flow (RegisterForm.tsx:43 — setSubmitted(true); // frontend-only); closing it makes the demo's 'real over impressive' promise true on every flow and exercises the private-bucket + signed-URL path no other flow touches.",
+  "generated_at": "2026-06-29T10:40:18Z",
+  "generated_by": "planner",
+  "source_plan_hash": "sha256:342b8bf3f83f4275908d23006a959c2b2a2043194a9b7dcbf7194d26c049bc38",
+  "success_criteria": [
+    "Submitting the registration form as the seeded mechanic creates one workshops row with that mechanic's owner_id, the entered name, and serial.",
+    "The certificate file lands in the private workshop-certs bucket under {uid}/cert.<ext> and workshops.cert_path holds that exact path.",
+    "The success screen shows the persisted name/serial/file and a working 'View certificate' link backed by createSignedUrl (not a client object URL).",
+    "Server-side validation rejects an oversized or wrong-type file and an unauthenticated/non-mechanic caller with a calm bilingual message — no partial write, no raw error code.",
+    "EL and EN render on every new string; a missing translation fails the build."
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Registration server action: validate, upload cert, persist workshop",
+      "wave": 1,
+      "depends_on": [],
+      "persona": "backend",
+      "files_modify": [],
+      "files_create": [
+        "src/lib/actions/register.ts"
+      ],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "A valid name + serial + image/PDF file <= 5MB creates exactly one workshops row whose owner_id equals the signed-in mechanic's uid, with the provided name and serial.",
+        "The certificate uploads to workshop-certs under {uid}/cert.<ext> with upsert:true, and that exact path is written to workshops.cert_path.",
+        "The action returns a typed success result carrying name, serial, certPath, and a signedUrl (createSignedUrl valid >= 5 minutes).",
+        "An unauthenticated caller, a non-mechanic role, an oversized file (>5MB), or a wrong MIME type each return a typed error result with a stable code — never an unhandled throw and never a partial row."
+      ],
+      "action": "Create src/lib/actions/register.ts with a top-level use-server directive (npm i zod if absent). registerSchema validates name/serial and the cert File (reject >5MB or non image/PDF MIME). registerWorkshop awaits createClient(), checks auth then role==mechanic, parses FormData to typed invalid_* codes (no throw), uploads {uid}/cert.<ext> upsert:true, upserts the workshops row (onConflict owner_id) with cert_path, calls createSignedUrl(path,300), returns RegisterResult. Never imports service_role.",
+      "context_files": [
+        ".planning/research/ARCHITECTURE.md",
+        ".planning/research/STACK.md",
+        ".planning/codebase/concerns.md",
+        "src/components/RegisterForm.tsx",
+        ".planning/CONTEXT.md"
+      ],
+      "verification": [
+        {
+          "type": "file-exists",
+          "path": "src/lib/actions/register.ts",
+          "pattern": "test -f",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/actions/register.ts",
+          "pattern": "createSignedUrl|upsert: true|getClaims|getUser",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/actions/register.ts",
+          "pattern": "service_role|SERVICE_ROLE|lib/supabase/client",
+          "expect": "absent"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/actions/register.ts",
+          "pattern": "file.size|file.type|application/pdf",
+          "expect": "present"
+        }
+      ]
+    },
+    {
+      "id": "T2",
+      "title": "Wire RegisterForm to the action: real submit, persisted success screen, bilingual states",
+      "wave": 2,
+      "depends_on": [
+        "T1"
+      ],
+      "persona": "frontend",
+      "files_modify": [
+        "src/components/RegisterForm.tsx",
+        "src/lib/i18n.ts"
+      ],
+      "files_create": [],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "Submitting a valid registration calls registerWorkshop, and on success the screen shows the persisted name, serial, and certificate filename plus a 'View certificate' link that opens the signed URL.",
+        "While the action is in flight the submit button shows a submitting label and is disabled; on ok:false an inline bilingual error (mapped from result.code) appears and the form stays filled.",
+        "A file rejected by the server (too large / wrong type) surfaces the invalid_file message in the current language; an oversized file does not appear 'saved'.",
+        "Every new string is present in BOTH el and en in lib/i18n.ts — a missing key is a TypeScript build error."
+      ],
+      "action": "Extend i18n.ts Translation + both el/en with submitting, viewCert, regErrors (one calm EL/EN line per error code). In RegisterForm.tsx call registerWorkshop with FormData(name,serial,cert) via useActionState tracking pending: button shows t.submitting/disabled; ok:false shows inline text-negative t.regErrors[code] keeping fields; ok:true sources success rows from result + a t.viewCert anchor to result.signedUrl. Remove the frontend-only no-op. No raw hex, no native select.",
+      "context_files": [
+        "src/components/RegisterForm.tsx",
+        "src/lib/i18n.ts",
+        "src/lib/data.ts",
+        ".planning/DESIGN.md",
+        ".planning/PRODUCT.md",
+        "src/components/icons.tsx"
+      ],
+      "verification": [
+        {
+          "type": "grep-match",
+          "path": "src/components/RegisterForm.tsx",
+          "pattern": "registerWorkshop",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/components/RegisterForm.tsx",
+          "pattern": "frontend-only",
+          "expect": "absent"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/i18n.ts",
+          "pattern": "regErrors|viewCert|submitting",
+          "expect": "present"
+        },
+        {
+          "type": "command-exit",
+          "command": "npx",
+          "args": [
+            "tsc",
+            "--noEmit"
+          ],
+          "expected_exit": 0
+        }
+      ]
+    }
+  ]
+}

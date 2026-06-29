@@ -1,0 +1,218 @@
+{
+  "version": 1,
+  "phase": 2,
+  "goal": "The two core logging flows read from and write to the database, with validation and proper states — no more in-memory seed data.",
+  "why": "Until the owner service log and mechanic job log actually persist to Supabase, the product is a static prototype — making the two flows real is the demo's entire pitch.",
+  "generated_at": "2026-06-29T10:41:08Z",
+  "generated_by": "planner",
+  "source_plan_hash": "sha256:3ca33aca52f91025fb6b3587d8be62a55a1e94db8289c69f3d8c57992d624a22",
+  "success_criteria": [
+    "An owner logs a service (type + date + place); it persists to service_entries (kind = owner_log) and survives a full refresh.",
+    "The owner's service history reads from the database, sorted newest-first, with localized service labels in EL and EN.",
+    "Every async owner/mechanic view has loading, empty, and error states in both languages.",
+    "A mechanic logs a job against a plate; it persists (kind = workshop_job) and appears in that vehicle's history, including the owner's view.",
+    "The mechanic 'saved' confirmation reflects the persisted row (no transient-only fake), reading recent entries from the DB.",
+    "Every mutation goes through a 'use server' action in src/lib/service-log.ts, verifies the user with getClaims() server-side, and is Zod-validated; reads are RLS-scoped (no service-role key).",
+    "No t.seedLog / t.mechanicSeed in-component arrays remain wired into the rendered logs."
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Service-log data layer (Zod schemas + server actions + read queries)",
+      "wave": 1,
+      "depends_on": [],
+      "persona": "backend",
+      "files_modify": [
+        "package.json"
+      ],
+      "files_create": [
+        "src/lib/service-log.ts",
+        "src/lib/services.ts"
+      ],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "logOwnerService while signed out returns an auth error and writes nothing — verifies the user with getClaims() server-side before any insert.",
+        "A successful owner service inserts one service_entries row with kind = 'owner_log', logged_by = auth.uid(), a language-stable canonical code in description, place, and service_date.",
+        "A successful mechanic job inserts one service_entries row with kind = 'workshop_job', resolving the typed plate to vehicles.id and erroring with a human message on unknown plate.",
+        "localizeServiceCode returns the Greek label for lang='el' and the English label for lang='en' for the same stored code."
+      ],
+      "action": "npm i zod. Create src/lib/services.ts (SERVICE_CODES = 10 canonical EN strings index-aligned with t.serviceOptions; localizeServiceCode). Create src/lib/service-log.ts (top-level use server; async createClient; zod). Each action verifies the user via getClaims(), safeParses FormData, then inserts: logOwnerService -> kind=owner_log (code+place+date); logMechanicJob resolves uppercased plate to vehicles.id (error if unknown) -> kind=workshop_job. Reads RLS-scoped, newest-first.",
+      "context_files": [
+        ".planning/research/STACK.md",
+        ".planning/research/ARCHITECTURE.md",
+        ".planning/CONTEXT.md",
+        "src/lib/i18n.ts",
+        "src/lib/data.ts",
+        ".planning/PRODUCT.md"
+      ],
+      "verification": [
+        {
+          "type": "file-exists",
+          "path": "src/lib/service-log.ts",
+          "pattern": "",
+          "expect": "present"
+        },
+        {
+          "type": "file-exists",
+          "path": "src/lib/services.ts",
+          "pattern": "",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/service-log.ts",
+          "pattern": "getClaims",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/service-log.ts",
+          "pattern": "use server",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "package.json",
+          "pattern": "\"zod\"",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/service-log.ts",
+          "pattern": "SERVICE_ROLE|service-role|serviceRole",
+          "expect": "absent"
+        }
+      ]
+    },
+    {
+      "id": "T2",
+      "title": "Owner ServiceLog reads/writes the DB (+ place input, states)",
+      "wave": 2,
+      "depends_on": [
+        "T1"
+      ],
+      "persona": "frontend",
+      "files_modify": [
+        "src/app/page.tsx",
+        "src/components/ServiceLog.tsx",
+        "src/lib/i18n.ts"
+      ],
+      "files_create": [],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "An owner picks a service type, date, and where it was done, taps Log, and the entry appears immediately and persists across a full refresh.",
+        "The history reads from the DB sorted newest-first; switching EL/EN re-localizes each entry's service label via localizeServiceCode.",
+        "With no entries, the history shows the reassuring empty state in the active language, not a blank list.",
+        "A failed save shows a human inline error in the active language; the submit button shows a saving state while pending."
+      ],
+      "action": "Make src/app/page.tsx an async Server Component calling getOwnerVehicleWithEntries() and passing {vehicle,entries} to ServiceLog. ServiceLog.tsx (use client): remove t.seedLog + useState persistence; render entries via localizeServiceCode; useActionState(logOwnerService) submitting canonical serviceCode + place + serviceDate; add a place input (existing class, t.placeLabel); add saving/empty/error states. Add new keys to el+en + the Translation type in i18n.ts.",
+      "context_files": [
+        "src/components/ServiceLog.tsx",
+        "src/app/page.tsx",
+        "src/lib/i18n.ts",
+        "src/lib/service-log.ts",
+        "src/lib/services.ts",
+        ".planning/DESIGN.md",
+        ".planning/PRODUCT.md",
+        "src/components/ServiceSelect.tsx"
+      ],
+      "verification": [
+        {
+          "type": "grep-match",
+          "path": "src/components/ServiceLog.tsx",
+          "pattern": "seedLog",
+          "expect": "absent"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/components/ServiceLog.tsx",
+          "pattern": "logOwnerService|useActionState",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/components/ServiceLog.tsx",
+          "pattern": "name=\"place\"|placeLabel",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/app/page.tsx",
+          "pattern": "getOwnerVehicleWithEntries",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/i18n.ts",
+          "pattern": "emptyHistory",
+          "expect": "present"
+        }
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "Mechanic MechanicLog reads/writes the DB (+ persisted saved confirmation, states)",
+      "wave": 2,
+      "depends_on": [
+        "T1"
+      ],
+      "persona": "frontend",
+      "files_modify": [
+        "src/app/mechanic/page.tsx",
+        "src/components/MechanicLog.tsx",
+        "src/lib/i18n.ts"
+      ],
+      "files_create": [],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "A mechanic types a plate, picks a job type and date, taps Add to history; a kind='workshop_job' row persists and the recent list survives refresh.",
+        "The saved confirmation appears only after the row actually persisted, not as optimistic-only client state.",
+        "A job logged against the owner's plate (ΚΧΡ 412) appears in the owner's service history — one shared record.",
+        "An unknown plate shows a human, actionable error in the active language; the recent list shows the empty state when there are no jobs."
+      ],
+      "action": "Make src/app/mechanic/page.tsx an async Server Component calling getMechanicRecentEntries() and passing entries to MechanicLog. MechanicLog.tsx (use client): remove t.mechanicSeed + added merge; render entries via localizeServiceCode; replace addEntry + justAdded/setTimeout with useActionState(logMechanicJob) submitting plate + serviceCode + serviceDate; ok->recordedTo, unknown_plate->error, pending/empty/load states. Add new keys to el+en + the Translation type.",
+      "context_files": [
+        "src/components/MechanicLog.tsx",
+        "src/app/mechanic/page.tsx",
+        "src/lib/i18n.ts",
+        "src/lib/service-log.ts",
+        "src/lib/services.ts",
+        ".planning/DESIGN.md",
+        ".planning/PRODUCT.md",
+        "src/components/ServiceSelect.tsx"
+      ],
+      "verification": [
+        {
+          "type": "grep-match",
+          "path": "src/components/MechanicLog.tsx",
+          "pattern": "mechanicSeed",
+          "expect": "absent"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/components/MechanicLog.tsx",
+          "pattern": "logMechanicJob|useActionState",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/components/MechanicLog.tsx",
+          "pattern": "setTimeout",
+          "expect": "absent"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/app/mechanic/page.tsx",
+          "pattern": "getMechanicRecentEntries",
+          "expect": "present"
+        },
+        {
+          "type": "grep-match",
+          "path": "src/lib/i18n.ts",
+          "pattern": "mechEmpty",
+          "expect": "present"
+        }
+      ]
+    }
+  ]
+}

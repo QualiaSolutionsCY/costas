@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/session";
 import { SERVICE_CODES } from "@/lib/services";
+import { normalizePlate } from "@/lib/plate";
 
 // Owner-side data seam. Reads vehicles + their service history straight from
 // Supabase and writes new vehicles and owner-logged services back. Access is
@@ -58,7 +59,7 @@ const vehicleSchema = z.object({
     .trim()
     .min(1)
     .max(20)
-    .transform((p) => p.toUpperCase()),
+    .transform(normalizePlate),
 });
 
 /**

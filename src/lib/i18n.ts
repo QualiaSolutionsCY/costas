@@ -87,6 +87,11 @@ export type Translation = {
   sendResetBtn: string;
   resetSent: string;
   resetSentSub: string;
+  // auth lifecycle: reset-password completion
+  resetPwTitle: string;
+  resetPwSub: string;
+  resetLinkExpired: string;
+  setNewPassword: string;
   // flow states / errors
   placeLabel: string;
   errService: string;
@@ -269,6 +274,10 @@ export const translations: Record<Lang, Translation> = {
     sendResetBtn: "Αποστολή συνδέσμου",
     resetSent: "Έλεγξε τα εισερχόμενά σου",
     resetSentSub: "Σου στείλαμε σύνδεσμο επαναφοράς κωδικού.",
+    resetPwTitle: "Νέος κωδικός",
+    resetPwSub: "Όρισε έναν νέο κωδικό για τον λογαριασμό σου.",
+    resetLinkExpired: "Ο σύνδεσμος επαναφοράς δεν ισχύει ή έληξε.",
+    setNewPassword: "Ορισμός κωδικού",
     placeLabel: "Πού έγινε;",
     errService: "Διάλεξε υπηρεσία.",
     errPlate: "Πρόσθεσε πινακίδα πριν αποθηκεύσεις.",
@@ -440,6 +449,10 @@ export const translations: Record<Lang, Translation> = {
     sendResetBtn: "Send reset link",
     resetSent: "Check your inbox",
     resetSentSub: "We've sent you a password reset link.",
+    resetPwTitle: "New password",
+    resetPwSub: "Set a new password for your account.",
+    resetLinkExpired: "This reset link is invalid or expired.",
+    setNewPassword: "Set password",
     placeLabel: "Where?",
     errService: "Pick a service.",
     errPlate: "Add a plate before saving.",

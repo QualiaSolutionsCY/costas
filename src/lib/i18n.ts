@@ -139,6 +139,16 @@ export type Translation = {
   adminRegistered: string;
   adminCert: string;
   adminNoCert: string;
+  // workshop verification badges + review actions
+  certified: string;
+  pendingReview: string;
+  rejected: string;
+  approve: string;
+  reject: string;
+  rejectReason: string;
+  confirmReject: string;
+  adminApproved: string;
+  adminRejected: string;
 };
 
 export const translations: Record<Lang, Translation> = {
@@ -287,6 +297,15 @@ export const translations: Record<Lang, Translation> = {
     adminRegistered: "Εγγραφή",
     adminCert: "Προβολή πιστοποιητικού",
     adminNoCert: "Χωρίς πιστοποιητικό",
+    certified: "Πιστοποιημένο",
+    pendingReview: "Σε αναμονή",
+    rejected: "Απορρίφθηκε",
+    approve: "Έγκριση",
+    reject: "Απόρριψη",
+    rejectReason: "Λόγος απόρριψης",
+    confirmReject: "Επιβεβαίωση",
+    adminApproved: "Εγκρίθηκε",
+    adminRejected: "Απορρίφθηκε",
   },
   en: {
     tagline: "Service Log",
@@ -433,5 +452,14 @@ export const translations: Record<Lang, Translation> = {
     adminRegistered: "Registered",
     adminCert: "View certificate",
     adminNoCert: "No certificate",
+    certified: "Certified",
+    pendingReview: "Pending",
+    rejected: "Rejected",
+    approve: "Approve",
+    reject: "Reject",
+    rejectReason: "Reason for rejection",
+    confirmReject: "Confirm",
+    adminApproved: "Approved",
+    adminRejected: "Rejected",
   },
 };

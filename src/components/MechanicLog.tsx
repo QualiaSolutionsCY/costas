@@ -14,6 +14,7 @@ import { useLang } from "./LanguageProvider";
 import { LanguageToggle } from "./LanguageToggle";
 import { CarDiagram, type CarPart } from "./CarDiagram";
 import { RowSkeleton } from "./Skeleton";
+import { WorkshopBadge, type WorkshopStatus } from "./WorkshopBadge";
 import { localizeServiceCode, type ServiceCode } from "@/lib/services";
 import {
   logMechanicJob,
@@ -53,7 +54,11 @@ function deriveService(parts: string[]): ServiceCode | "" {
 
 const initialState: JobState = { ok: false, error: null };
 
-export function MechanicLog() {
+export function MechanicLog({
+  workshopStatus,
+}: {
+  workshopStatus?: WorkshopStatus;
+}) {
   const { t } = useLang();
   const [state, formAction, isPending] = useActionState(
     logMechanicJob,
@@ -142,10 +147,16 @@ export function MechanicLog() {
           <p className="truncate text-base font-semibold tracking-tight">
             {workshop.name}
           </p>
-          <p className="inline-flex items-center gap-1 text-xs text-muted">
-            <Icon name="shield" className="h-3.5 w-3.5 text-positive" />{" "}
-            {t.mechCertified} · {t.workshopCity}
-          </p>
+          {workshopStatus ? (
+            <p className="inline-flex items-center gap-1.5 text-xs text-muted">
+              <WorkshopBadge status={workshopStatus} /> · {t.workshopCity}
+            </p>
+          ) : (
+            <p className="inline-flex items-center gap-1 text-xs text-muted">
+              <Icon name="shield" className="h-3.5 w-3.5 text-positive" />{" "}
+              {t.mechCertified} · {t.workshopCity}
+            </p>
+          )}
         </div>
 
         <div className="ml-auto flex items-center gap-2">

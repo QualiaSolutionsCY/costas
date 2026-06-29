@@ -5,6 +5,7 @@ import { useFormStatus } from "react-dom";
 import { Icon } from "./icons";
 import { useLang } from "./LanguageProvider";
 import { ServiceSelect } from "./ServiceSelect";
+import { WorkshopBadge } from "./WorkshopBadge";
 import {
   addVehicle,
   getEntries,
@@ -40,11 +41,23 @@ function SubmitButton({ label }: { label: string }) {
 export function ServiceLog({
   vehicles,
   initialEntries,
+  verifiedWorkshops = [],
 }: {
   vehicles: OwnerVehicle[];
   initialEntries: OwnerEntry[];
+  verifiedWorkshops?: string[];
 }) {
   const { t } = useLang();
+
+  // Names are pre-lowercased + trimmed by getVerifiedWorkshopNames(). A history
+  // entry's free-text `place` is "verified" when any verified workshop name is a
+  // substring of the lowercased place — the only honest owner-side link, since
+  // service_entries.place has no FK to a workshop.
+  const isVerifiedPlace = (place: string | null | undefined) => {
+    if (!place) return false;
+    const haystack = place.toLowerCase();
+    return verifiedWorkshops.some((name) => name && haystack.includes(name));
+  };
 
   const [selectedId, setSelectedId] = useState<string | null>(
     vehicles[0]?.id ?? null,
@@ -177,9 +190,10 @@ export function ServiceLog({
               {selectedVehicle?.plate ?? "—"}
             </p>
           </div>
-          <span className="ml-auto inline-flex items-center gap-1 self-start rounded-full bg-positive/10 px-2 py-0.5 text-[11px] font-medium text-positive">
-            <Icon name="shield" className="h-3 w-3" /> {t.mechCertified}
-          </span>
+          <WorkshopBadge
+            status={isVerifiedPlace(entries[0]?.place) ? "verified" : "pending"}
+            className="ml-auto self-start"
+          />
         </div>
         <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-lg border bg-border">
           <div className="bg-surface px-3 py-2">
@@ -302,9 +316,14 @@ export function ServiceLog({
                     <span className="shrink-0 text-xs tabular-nums text-muted">{formatDate(entry.serviced_on)}</span>
                   </div>
                   {entry.place && (
-                    <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-muted">
-                      <Icon name="pin" /> {entry.place}
-                    </p>
+                    <div className="mt-0.5 flex flex-wrap items-center gap-2">
+                      <p className="inline-flex items-center gap-1 text-xs text-muted">
+                        <Icon name="pin" /> {entry.place}
+                      </p>
+                      {isVerifiedPlace(entry.place) && (
+                        <WorkshopBadge status="verified" />
+                      )}
+                    </div>
                   )}
                   {entry.note && <p className="mt-0.5 text-xs text-muted">{entry.note}</p>}
                 </div>

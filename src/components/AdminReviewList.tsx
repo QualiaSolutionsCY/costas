@@ -27,6 +27,7 @@ export function AdminReviewList({ workshops }: { workshops: AdminWorkshop[] }) {
   const [, startTransition] = useTransition();
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
+  const [actionError, setActionError] = useState(false);
 
   // Optimistically remove a reviewed row; the revalidated server list arrives
   // on the next render and reconciles.
@@ -43,17 +44,21 @@ export function AdminReviewList({ workshops }: { workshops: AdminWorkshop[] }) {
     });
 
   function onApprove(id: string) {
+    setActionError(false);
     const fd = new FormData();
     fd.set("workshopId", id);
     startTransition(() => {
       removeOptimistic(id);
-      void approveWorkshop(noopState, fd);
+      void approveWorkshop(noopState, fd).then((res) => {
+        if (res && !res.ok) setActionError(true);
+      });
     });
   }
 
   function onConfirmReject(id: string) {
     const trimmed = reason.trim();
     if (!trimmed) return;
+    setActionError(false);
     const fd = new FormData();
     fd.set("workshopId", id);
     fd.set("reason", trimmed);
@@ -61,7 +66,9 @@ export function AdminReviewList({ workshops }: { workshops: AdminWorkshop[] }) {
     setReason("");
     startTransition(() => {
       removeOptimistic(id);
-      void rejectWorkshop(noopState, fd);
+      void rejectWorkshop(noopState, fd).then((res) => {
+        if (res && !res.ok) setActionError(true);
+      });
     });
   }
 
@@ -86,6 +93,12 @@ export function AdminReviewList({ workshops }: { workshops: AdminWorkshop[] }) {
           {t.adminPending(optimistic.length)}
         </span>
       </div>
+
+      {actionError ? (
+        <p role="alert" className="rounded-lg bg-negative/10 px-3 py-2 text-xs font-medium text-negative">
+          {t.errSave}
+        </p>
+      ) : null}
 
       {optimistic.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-xl border bg-surface px-4 py-12 text-center">

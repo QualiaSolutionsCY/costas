@@ -7,6 +7,12 @@ import { ServiceSelect } from "./ServiceSelect";
 import { createBooking } from "@/lib/booking-actions";
 import { serviceCodeFromIndex, localizeServiceCode } from "@/lib/services";
 
+// dd/mm/yyyy from an ISO `YYYY-MM-DD`, mirroring RemindersList's local helper.
+function formatDate(iso: string) {
+  const [y, m, d] = iso.split("-");
+  return d && m && y ? `${d}/${m}/${y}` : iso;
+}
+
 // Shared input + button class strings, lifted verbatim from SettingsClient so
 // every control here matches the existing form surfaces (register/auth/owner).
 const INPUT =
@@ -203,8 +209,11 @@ export function BookingForm({ workshops, vehicles, bookings }: Props) {
                   </p>
                   {b.requested_date ? (
                     <p className="mt-0.5 font-mono text-xs tabular-nums text-muted">
-                      {b.requested_date}
+                      {formatDate(b.requested_date)}
                     </p>
+                  ) : null}
+                  {b.note ? (
+                    <p className="mt-0.5 text-xs text-muted">{b.note}</p>
                   ) : null}
                 </div>
                 <div className="ml-auto shrink-0">

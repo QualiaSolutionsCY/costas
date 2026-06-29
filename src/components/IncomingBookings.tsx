@@ -7,6 +7,12 @@ import { Icon } from "./icons";
 import { updateBookingStatus } from "@/lib/booking-actions";
 import { localizeServiceCode } from "@/lib/services";
 
+// dd/mm/yyyy from an ISO `YYYY-MM-DD`, mirroring RemindersList's local helper.
+function formatDate(iso: string) {
+  const [y, m, d] = iso.split("-");
+  return d && m && y ? `${d}/${m}/${y}` : iso;
+}
+
 // Shared card/button class strings, lifted from SettingsClient so this surface
 // matches the rest of the workshop UI (semantic tokens only — no raw hex).
 const CARD = "rounded-xl border bg-surface p-4";
@@ -99,7 +105,7 @@ function BookingCard({ booking }: { booking: Booking }) {
             {booking.requested_date ? (
               <span className="inline-flex items-center gap-1 font-mono tabular-nums text-muted">
                 <Icon name="calendar" className="h-3.5 w-3.5" />
-                {booking.requested_date}
+                {formatDate(booking.requested_date)}
               </span>
             ) : null}
           </div>

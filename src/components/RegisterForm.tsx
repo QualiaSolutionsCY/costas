@@ -19,6 +19,7 @@ export function RegisterForm() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -39,8 +40,13 @@ export function RegisterForm() {
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!valid) return;
-    setSubmitted(true); // frontend-only
+    if (!valid || submitting) return;
+    // Simulated submit — Phase 3 swaps this for the real upload + insert action.
+    setSubmitting(true);
+    setTimeout(() => {
+      setSubmitting(false);
+      setSubmitted(true);
+    }, 800);
   }
 
   function reset() {
@@ -74,7 +80,7 @@ export function RegisterForm() {
   return (
     <div className="mx-auto max-w-md px-4 py-8 sm:py-12">
       <div className="flex items-center gap-3">
-        <span className="grid h-11 w-11 place-items-center rounded-xl bg-foreground text-base font-bold text-surface">C</span>
+        <span className="grid h-11 w-11 place-items-center rounded-xl bg-accent text-base font-bold text-surface shadow-sm">C</span>
         <div className="min-w-0">
           <h1 className="text-base font-semibold tracking-tight">{t.regTitle}</h1>
           <p className="truncate text-xs text-muted">{t.regSubtitle}</p>
@@ -163,10 +169,11 @@ export function RegisterForm() {
 
         <button
           type="submit"
-          disabled={!valid}
-          className="w-full rounded-lg bg-foreground px-4 py-2.5 text-sm font-medium text-surface transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+          disabled={!valid || submitting}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-surface transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {t.submitReg}
+          {submitting && <Icon name="spinner" className="h-4 w-4" />}
+          {submitting ? t.submitting : t.submitReg}
         </button>
       </form>
     </div>

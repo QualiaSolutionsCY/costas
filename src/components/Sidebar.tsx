@@ -9,7 +9,7 @@ export function Sidebar({ active, onSelect }: { active: NavKey; onSelect: (key: 
   return (
     <div className="flex h-full w-64 flex-col bg-surface px-4 py-5">
       <div className="flex items-center gap-2.5 px-2 pb-6">
-        <div className="grid h-9 w-9 place-items-center rounded-xl bg-foreground text-base font-bold text-surface">C</div>
+        <div className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-base font-bold text-surface shadow-sm">C</div>
         <div className="leading-tight">
           <span className="block text-[15px] font-semibold tracking-tight">Costas</span>
           <span className="block text-[11px] text-muted">{t.tagline}</span>
@@ -24,7 +24,7 @@ export function Sidebar({ active, onSelect }: { active: NavKey; onSelect: (key: 
             onClick={() => onSelect(item.key)}
             className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
               active === item.key
-                ? "bg-surface-2 font-medium text-foreground"
+                ? "bg-accent-soft font-medium text-accent"
                 : "text-muted hover:bg-surface-2 hover:text-foreground"
             }`}
           >

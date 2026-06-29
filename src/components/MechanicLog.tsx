@@ -7,6 +7,8 @@ import Link from "next/link";
 import { useLang } from "./LanguageProvider";
 import { LanguageToggle } from "./LanguageToggle";
 import { ServiceSelect } from "./ServiceSelect";
+import { useInitialLoad } from "@/lib/useInitialLoad";
+import { RowSkeleton } from "./Skeleton";
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -19,6 +21,7 @@ function formatDate(iso: string) {
 
 export function MechanicLog() {
   const { t } = useLang();
+  const loading = useInitialLoad();
   const [added, setAdded] = useState<WorkLog[]>([]);
   const [plate, setPlate] = useState("");
   const [serviceIdx, setServiceIdx] = useState(-1);
@@ -27,6 +30,7 @@ export function MechanicLog() {
 
   const seed: WorkLog[] = t.mechanicSeed.map((s, i) => ({ id: `seed-${i}`, ...s }));
   const entries = [...added, ...seed].sort((a, b) => b.date.localeCompare(a.date));
+  const todayCount = entries.filter((e) => e.date === todayISO()).length;
 
   function addEntry(e: React.FormEvent) {
     e.preventDefault();
@@ -44,7 +48,7 @@ export function MechanicLog() {
     <div className="mx-auto max-w-2xl px-4 py-8 sm:py-12">
       {/* Ταυτότητα συνεργείου + γλώσσα */}
       <div className="flex items-center gap-3">
-        <span className="grid h-11 w-11 place-items-center rounded-xl bg-foreground text-base font-bold text-surface">
+        <span className="grid h-11 w-11 place-items-center rounded-xl bg-accent text-base font-bold text-surface shadow-sm">
           {workshop.name.charAt(0)}
         </span>
         <div>
@@ -105,7 +109,7 @@ export function MechanicLog() {
         <button
           type="submit"
           disabled={!plate.trim() || serviceIdx < 0}
-          className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-foreground px-4 py-2.5 text-sm font-medium text-surface transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+          className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-surface transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Icon name="plus" className="h-4 w-4" />
           {t.mechRecordBtn}
@@ -119,21 +123,38 @@ export function MechanicLog() {
       </form>
 
       {/* Πρόσφατες καταγραφές */}
-      <h2 className="mt-8 px-1 text-sm font-semibold">{t.recentTitle}</h2>
-      <ul className="mt-3 space-y-2">
-        {entries.map((entry) => (
-          <li key={entry.id} className="flex items-center gap-3 rounded-xl border bg-surface px-4 py-3">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border bg-surface-2 text-foreground/60">
-              <Icon name="wrench" className="h-4 w-4" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{entry.work}</p>
-              <p className="font-mono text-[11px] tracking-wider text-muted">{entry.plate}</p>
-            </div>
-            <span className="shrink-0 text-xs tabular-nums text-muted">{formatDate(entry.date)}</span>
-          </li>
-        ))}
-      </ul>
+      <div className="mt-8 flex items-center gap-2 px-1">
+        <h2 className="text-sm font-semibold">{t.recentTitle}</h2>
+        {!loading && (
+          <span className="inline-flex items-center rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-medium tabular-nums text-accent">
+            {t.jobsToday(todayCount)}
+          </span>
+        )}
+      </div>
+
+      {loading ? (
+        <RowSkeleton />
+      ) : entries.length === 0 ? (
+        <div className="mt-3 grid place-items-center rounded-xl border border-dashed bg-surface py-12 text-center">
+          <Icon name="wrench" className="h-7 w-7 text-muted" />
+          <p className="mt-3 text-sm font-medium">{t.recentEmpty}</p>
+        </div>
+      ) : (
+        <ul className="mt-3 space-y-2">
+          {entries.map((entry) => (
+            <li key={entry.id} className="flex items-center gap-3 rounded-xl border bg-surface px-4 py-3 transition-colors hover:border-foreground/20">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-accent-soft text-accent ring-1 ring-accent/15">
+                <Icon name="wrench" className="h-4 w-4" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{entry.work}</p>
+                <p className="font-mono text-[11px] tracking-wider text-muted">{entry.plate}</p>
+              </div>
+              <span className="shrink-0 text-xs tabular-nums text-muted">{formatDate(entry.date)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

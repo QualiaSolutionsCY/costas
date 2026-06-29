@@ -18,6 +18,13 @@ export type Translation = {
   recordBtn: string;
   historyTitle: string;
   servicedAt: string;
+  recordedOwn: string;
+  statServices: string;
+  statLast: string;
+  statNone: string;
+  historyEmpty: string;
+  historyEmptyHint: string;
+  loading: string;
   // mechanic
   workshopCity: string;
   mechCertified: string;
@@ -30,6 +37,8 @@ export type Translation = {
   dateLabel: string;
   mechRecordBtn: string;
   recordedTo: (plate: string) => string;
+  jobsToday: (n: number) => string;
+  recentEmpty: string;
   recentTitle: string;
   seedLog: SeedEntry[];
   mechanicSeed: MechSeedEntry[];
@@ -50,6 +59,15 @@ export type Translation = {
   removeFile: string;
   registerAnother: string;
   registerLink: string;
+  submitting: string;
+  // navigation panels
+  vehiclesSubtitle: string;
+  settingsSubtitle: string;
+  openLog: string;
+  prefLanguage: string;
+  prefLanguageHint: string;
+  settingsAbout: string;
+  settingsAboutText: string;
 };
 
 export const translations: Record<Lang, Translation> = {
@@ -67,6 +85,13 @@ export const translations: Record<Lang, Translation> = {
     recordBtn: "Καταγραφή",
     historyTitle: "Ιστορικό σέρβις",
     servicedAt: "Σέρβις στο",
+    recordedOwn: "Καταχωρήθηκε στο ιστορικό σου",
+    statServices: "Καταγραφές",
+    statLast: "Τελευταίο",
+    statNone: "—",
+    historyEmpty: "Καμία καταγραφή ακόμα",
+    historyEmptyHint: "Πρόσθεσε το πρώτο σέρβις παραπάνω.",
+    loading: "Φόρτωση…",
     workshopCity: "Λευκωσία",
     mechCertified: "Πιστοποιημένο συνεργείο",
     mechSubtitle: "Καταχώρησε την εργασία στο ιστορικό του οχήματος.",
@@ -89,6 +114,8 @@ export const translations: Record<Lang, Translation> = {
     dateLabel: "Ημερομηνία",
     mechRecordBtn: "Καταγραφή στο ιστορικό",
     recordedTo: (plate) => `Καταχωρήθηκε στο όχημα ${plate}`,
+    jobsToday: (n) => `${n} σήμερα`,
+    recentEmpty: "Καμία καταγραφή ακόμα",
     recentTitle: "Πρόσφατες καταγραφές",
     seedLog: [
       { date: "2025-02-12", place: "AutoCheck, Λευκωσία", note: "Αλλαγή φρένων" },
@@ -118,6 +145,14 @@ export const translations: Record<Lang, Translation> = {
     removeFile: "Αφαίρεση",
     registerAnother: "Νέα εγγραφή",
     registerLink: "Εγγραφή συνεργείου",
+    submitting: "Υποβολή…",
+    vehiclesSubtitle: "Τα οχήματα που παρακολουθείς.",
+    settingsSubtitle: "Προτιμήσεις λογαριασμού.",
+    openLog: "Άνοιγμα βιβλίου",
+    prefLanguage: "Γλώσσα",
+    prefLanguageHint: "Η γλώσσα της εφαρμογής",
+    settingsAbout: "Σχετικά",
+    settingsAboutText: "Costas — δίγλωσσο βιβλίο σέρβις αυτοκινήτου για την Κύπρο.",
   },
   en: {
     tagline: "Service Log",
@@ -133,6 +168,13 @@ export const translations: Record<Lang, Translation> = {
     recordBtn: "Log",
     historyTitle: "Service history",
     servicedAt: "Serviced at",
+    recordedOwn: "Logged to your history",
+    statServices: "Records",
+    statLast: "Last",
+    statNone: "—",
+    historyEmpty: "No services logged yet",
+    historyEmptyHint: "Add the first service above.",
+    loading: "Loading…",
     workshopCity: "Nicosia",
     mechCertified: "Certified workshop",
     mechSubtitle: "Add the job to the vehicle's history.",
@@ -155,6 +197,8 @@ export const translations: Record<Lang, Translation> = {
     dateLabel: "Date",
     mechRecordBtn: "Add to history",
     recordedTo: (plate) => `Recorded to vehicle ${plate}`,
+    jobsToday: (n) => `${n} today`,
+    recentEmpty: "No entries yet",
     recentTitle: "Recent entries",
     seedLog: [
       { date: "2025-02-12", place: "AutoCheck, Nicosia", note: "Brake replacement" },
@@ -184,5 +228,13 @@ export const translations: Record<Lang, Translation> = {
     removeFile: "Remove",
     registerAnother: "New registration",
     registerLink: "Workshop registration",
+    submitting: "Submitting…",
+    vehiclesSubtitle: "The vehicles you're tracking.",
+    settingsSubtitle: "Account preferences.",
+    openLog: "Open log",
+    prefLanguage: "Language",
+    prefLanguageHint: "The app's language",
+    settingsAbout: "About",
+    settingsAboutText: "Costas — a bilingual car service log for Cyprus.",
   },
 };

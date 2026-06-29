@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getOwnerBookings } from "@/lib/booking-actions";
 import { getVerifiedWorkshopNames } from "@/lib/workshop-status";
 import { getVehicles } from "@/lib/owner-actions";
@@ -9,7 +10,10 @@ import { BookingForm } from "@/components/BookingForm";
 // it must opt out of static rendering (Next 16 — dynamic session/cookie reads).
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Costas · Κλείσε ραντεβού" };
+export const metadata: Metadata = {
+  title: "Costas · Κλείσε ραντεβού",
+  description: "Κλείσε ραντεβού σέρβις με πιστοποιημένο συνεργείο κοντά σου.",
+};
 
 /**
  * OWNER booking surface. Mirrors the /settings shell — a Costas-branded header

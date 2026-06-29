@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getProfile } from "@/lib/profile-actions";
 import { getReminderPrefs } from "@/lib/reminder-prefs-actions";
 import { getVehicles } from "@/lib/owner-actions";
@@ -7,6 +8,12 @@ import { SettingsClient, BackToLogLink } from "@/components/SettingsClient";
 // Reads session-scoped profile + cookies at request time, so it must opt out
 // of static rendering (Next 16 — dynamic surfaces that read cookies/session).
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Costas · Ρυθμίσεις",
+  description: "Διαχειρίσου το προφίλ, τα οχήματα και τις υπενθυμίσεις σου.",
+  robots: { index: false },
+};
 
 /**
  * Account settings surface. Mirrors the /admin shell: a Costas-branded header

@@ -2,8 +2,12 @@ import { MechanicLog } from "@/components/MechanicLog";
 import { createClient } from "@/lib/supabase/server";
 import type { WorkshopStatus } from "@/components/WorkshopBadge";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "Costas · Πλευρά Συνεργείου",
+  description:
+    "Κατέγραψε εργασίες σέρβις ανά πινακίδα — γρήγορα, από το κινητό, στον χώρο του συνεργείου.",
 };
 
 // No auth gate — login is optional. Anonymous mechanics can resolve a plate,

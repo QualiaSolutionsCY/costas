@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getVehicles } from "@/lib/owner-actions";
 import { getRemindersForVehicles } from "@/lib/reminders";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -7,6 +8,12 @@ import { RemindersList } from "@/components/RemindersList";
 // Reads session-scoped vehicles + cookies at request time, so it must opt out
 // of static rendering (Next 16 — dynamic surfaces that read cookies/session).
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Costas · Υπενθυμίσεις",
+  description: "Δες τις επερχόμενες υπενθυμίσεις σέρβις για τα οχήματά σου.",
+  robots: { index: false },
+};
 
 /**
  * Owner reminders surface. Mirrors the /settings shell: a Costas-branded header

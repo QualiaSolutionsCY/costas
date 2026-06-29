@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getIncomingBookings } from "@/lib/booking-actions";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { IncomingBookings } from "@/components/IncomingBookings";
@@ -6,7 +7,11 @@ import { IncomingBookings } from "@/components/IncomingBookings";
 // surface must opt out of static rendering (Next 16 — dynamic request data).
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Costas · Εισερχόμενα ραντεβού" };
+export const metadata: Metadata = {
+  title: "Costas · Εισερχόμενα ραντεβού",
+  description:
+    "Διαχειρίσου τα εισερχόμενα αιτήματα ραντεβού του συνεργείου σου.",
+};
 
 /**
  * Workshop-side incoming-bookings surface. Mirrors the /settings shell: a

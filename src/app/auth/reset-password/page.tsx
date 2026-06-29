@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { changePassword } from "@/lib/account-actions";
 import { ResetPasswordForm } from "./ResetPasswordForm";
+
+export const metadata: Metadata = {
+  title: "Costas · Επαναφορά κωδικού",
+  description: "Όρισε νέο κωδικό πρόσβασης για τον λογαριασμό σου.",
+  robots: { index: false },
+};
 
 // Exchanges the reset code for a session at request time — never prerender.
 export const dynamic = "force-dynamic";

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSessionRole } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -5,6 +6,12 @@ import { signOut } from "@/lib/auth-actions";
 import { AdminReviewList, type AdminWorkshop } from "@/components/AdminReviewList";
 import { SignOutButton } from "@/components/SignOutButton";
 import { LanguageToggle } from "@/components/LanguageToggle";
+
+export const metadata: Metadata = {
+  title: "Costas · Διαχείριση",
+  description: "Έλεγχος και επαλήθευση αιτημάτων εγγραφής συνεργείων.",
+  robots: { index: false },
+};
 
 const CERT_BUCKET = "workshop-certs";
 const SIGNED_URL_TTL = 60;

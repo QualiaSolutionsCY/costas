@@ -6,9 +6,12 @@ import { Topbar } from "./Topbar";
 import { Icon } from "./icons";
 import { useLang } from "./LanguageProvider";
 import { LanguageToggle } from "./LanguageToggle";
-import { car } from "@/lib/data";
+import { signOut } from "@/lib/auth-actions";
 import type { NavKey } from "@/lib/data";
 import type { Translation } from "@/lib/i18n";
+
+type Vehicle = { model: string; plate: string };
+type Entry = { serviced_on: string };
 
 function formatDate(iso: string) {
   const [y, m, d] = iso.split("-");
@@ -16,9 +19,21 @@ function formatDate(iso: string) {
 }
 
 /** Real "My Vehicles" surface — the tracked vehicle with its at-a-glance stats. */
-function VehiclesPanel({ t, onOpenLog }: { t: Translation; onOpenLog: () => void }) {
-  const count = t.seedLog.length;
-  const last = t.seedLog.map((s) => s.date).sort((a, b) => b.localeCompare(a))[0];
+function VehiclesPanel({
+  t,
+  onOpenLog,
+  vehicle,
+  entries,
+}: {
+  t: Translation;
+  onOpenLog: () => void;
+  vehicle: Vehicle | null;
+  entries: Entry[];
+}) {
+  const count = entries.length;
+  const last = entries
+    .map((e) => e.serviced_on)
+    .sort((a, b) => b.localeCompare(a))[0];
   return (
     <div className="mx-auto max-w-2xl">
       <div className="px-1">
@@ -31,8 +46,8 @@ function VehiclesPanel({ t, onOpenLog }: { t: Translation; onOpenLog: () => void
             <Icon name="car" />
           </span>
           <div className="min-w-0">
-            <p className="text-sm font-semibold">{car.model}</p>
-            <p className="font-mono text-xs tracking-wider text-muted">{car.plate}</p>
+            <p className="text-sm font-semibold">{vehicle?.model ?? "—"}</p>
+            <p className="font-mono text-xs tracking-wider text-muted">{vehicle?.plate ?? "—"}</p>
           </div>
           <button
             onClick={onOpenLog}
@@ -89,12 +104,29 @@ function SettingsPanel({ t }: { t: Translation }) {
             <p className="text-xs text-muted">{t.settingsAboutText}</p>
           </div>
         </div>
+        <form action={signOut} className="p-4">
+          <button
+            type="submit"
+            className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium text-negative transition-colors hover:bg-negative/5"
+          >
+            <Icon name="key" className="h-4 w-4" />
+            {t.signOut}
+          </button>
+        </form>
       </div>
     </div>
   );
 }
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  vehicle,
+  entries,
+}: {
+  children: React.ReactNode;
+  vehicle: Vehicle | null;
+  entries: Entry[];
+}) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<NavKey>("log");
   const { t } = useLang();
@@ -136,7 +168,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {active === "log" ? (
             children
           ) : active === "vehicles" ? (
-            <VehiclesPanel t={t} onOpenLog={() => select("log")} />
+            <VehiclesPanel t={t} onOpenLog={() => select("log")} vehicle={vehicle} entries={entries} />
           ) : (
             <SettingsPanel t={t} />
           )}

@@ -1,12 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import { car, type LogEntry } from "@/lib/data";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { Icon } from "./icons";
 import { useLang } from "./LanguageProvider";
 import { ServiceSelect } from "./ServiceSelect";
-import { useInitialLoad } from "@/lib/useInitialLoad";
-import { TimelineSkeleton } from "./Skeleton";
+import { logOwnerService } from "@/lib/owner-actions";
+import { serviceCodeFromIndex, localizeServiceCode } from "@/lib/services";
+import { useState } from "react";
+
+type Vehicle = { model: string; plate: string };
+type Entry = {
+  id: string;
+  service_code: string;
+  note: string | null;
+  place: string | null;
+  serviced_on: string;
+  kind: string;
+};
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -17,27 +28,37 @@ function formatDate(iso: string) {
   return d && m && y ? `${d}/${m}/${y}` : iso;
 }
 
-export function ServiceLog() {
+function SubmitButton({ label }: { label: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-surface transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      <Icon name={pending ? "spinner" : "plus"} className="h-4 w-4" />
+      {label}
+    </button>
+  );
+}
+
+export function ServiceLog({
+  vehicle,
+  initialEntries,
+}: {
+  vehicle: Vehicle | null;
+  initialEntries: Entry[];
+}) {
   const { t } = useLang();
-  const loading = useInitialLoad();
-  const [added, setAdded] = useState<LogEntry[]>([]);
+  const [state, formAction] = useActionState(logOwnerService, {
+    ok: false,
+    error: null,
+  });
   const [serviceIdx, setServiceIdx] = useState(-1);
-  const [date, setDate] = useState(todayISO);
-  const [justAdded, setJustAdded] = useState(false);
 
-  const seed: LogEntry[] = t.seedLog.map((s, i) => ({ id: `seed-${i}`, ...s }));
-  const entries = [...added, ...seed].sort((a, b) => b.date.localeCompare(a.date));
-  const lastServiced = entries[0]?.date;
-
-  function addEntry(e: React.FormEvent) {
-    e.preventDefault();
-    if (serviceIdx < 0) return;
-    const note = t.serviceOptions[serviceIdx];
-    setAdded((prev) => [{ id: String(Date.now()), date: date || todayISO(), note }, ...prev]);
-    setServiceIdx(-1);
-    setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 2500);
-  }
+  const entries = initialEntries;
+  const lastServiced = entries[0]?.serviced_on;
+  const serviceCode = serviceCodeFromIndex(serviceIdx);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -48,8 +69,8 @@ export function ServiceLog() {
             <Icon name="car" />
           </span>
           <div>
-            <p className="text-sm font-semibold">{car.model}</p>
-            <p className="font-mono text-xs tracking-wider text-muted">{car.plate}</p>
+            <p className="text-sm font-semibold">{vehicle?.model ?? "—"}</p>
+            <p className="font-mono text-xs tracking-wider text-muted">{vehicle?.plate ?? "—"}</p>
           </div>
           <span className="ml-auto inline-flex items-center gap-1 self-start rounded-full bg-positive/10 px-2 py-0.5 text-[11px] font-medium text-positive">
             <Icon name="shield" className="h-3 w-3" /> {t.mechCertified}
@@ -59,23 +80,23 @@ export function ServiceLog() {
         <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-lg border bg-border">
           <div className="bg-surface px-3 py-2">
             <dt className="text-[11px] text-muted">{t.statServices}</dt>
-            <dd className="mt-0.5 text-sm font-semibold tabular-nums">
-              {loading ? "—" : entries.length}
-            </dd>
+            <dd className="mt-0.5 text-sm font-semibold tabular-nums">{entries.length}</dd>
           </div>
           <div className="bg-surface px-3 py-2">
             <dt className="text-[11px] text-muted">{t.statLast}</dt>
             <dd className="mt-0.5 font-mono text-sm font-semibold tabular-nums">
-              {loading || !lastServiced ? t.statNone : formatDate(lastServiced)}
+              {lastServiced ? formatDate(lastServiced) : t.statNone}
             </dd>
           </div>
         </dl>
       </div>
 
       {/* Καταγραφή νέου σέρβις */}
-      <form onSubmit={addEntry} className="mt-4 rounded-xl border bg-surface p-4">
+      <form action={formAction} className="mt-4 rounded-xl border bg-surface p-4">
         <h2 className="text-sm font-semibold">{t.recordTitle}</h2>
         <p className="mt-0.5 text-xs text-muted">{t.recordSubtitle}</p>
+
+        <input type="hidden" name="service_code" value={serviceCode ?? ""} />
 
         <div className="mt-3 flex flex-col gap-2 sm:flex-row">
           <ServiceSelect
@@ -87,24 +108,30 @@ export function ServiceLog() {
           />
           <input
             type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
+            name="serviced_on"
+            defaultValue={todayISO()}
             className="rounded-lg border bg-surface-2 px-3 py-2.5 text-sm text-muted outline-none focus:border-foreground focus:bg-surface"
           />
         </div>
 
+        <input
+          name="place"
+          aria-label={t.placeLabel}
+          placeholder={t.placePlaceholder}
+          maxLength={120}
+          className="mt-2 w-full rounded-lg border bg-surface-2 px-3 py-2.5 text-sm outline-none placeholder:text-muted focus:border-foreground focus:bg-surface"
+        />
+
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <button
-            type="submit"
-            disabled={serviceIdx < 0}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-surface transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Icon name="plus" className="h-4 w-4" />
-            {t.recordBtn}
-          </button>
-          {justAdded && (
+          <SubmitButton label={t.recordBtn} />
+          {state.ok && (
             <span className="inline-flex items-center gap-1.5 rounded-lg bg-positive/10 px-3 py-1.5 text-xs font-medium text-positive [animation:popIn_.12s_ease-out]">
               <Icon name="check" className="h-3.5 w-3.5" /> {t.recordedOwn}
+            </span>
+          )}
+          {state.error && (
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-negative/10 px-3 py-1.5 text-xs font-medium text-negative">
+              {t.errSave}
             </span>
           )}
         </div>
@@ -116,9 +143,7 @@ export function ServiceLog() {
         {t.historyTitle}
       </h2>
 
-      {loading ? (
-        <TimelineSkeleton />
-      ) : entries.length === 0 ? (
+      {entries.length === 0 ? (
         <div className="mt-3 grid place-items-center rounded-xl border border-dashed bg-surface py-12 text-center">
           <Icon name="wrench" className="h-7 w-7 text-muted" />
           <p className="mt-3 text-sm font-medium">{t.historyEmpty}</p>
@@ -136,14 +161,17 @@ export function ServiceLog() {
                 </span>
                 <div className="min-w-0 flex-1 rounded-xl border bg-surface px-4 py-3 transition-colors hover:border-foreground/20">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-sm font-semibold">{entry.note ?? "—"}</p>
-                    <span className="shrink-0 text-xs tabular-nums text-muted">{formatDate(entry.date)}</span>
+                    <p className="truncate text-sm font-semibold">
+                      {localizeServiceCode(entry.service_code, t.serviceOptions)}
+                    </p>
+                    <span className="shrink-0 text-xs tabular-nums text-muted">{formatDate(entry.serviced_on)}</span>
                   </div>
                   {entry.place && (
                     <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-muted">
                       <Icon name="pin" /> {entry.place}
                     </p>
                   )}
+                  {entry.note && <p className="mt-0.5 text-xs text-muted">{entry.note}</p>}
                 </div>
               </li>
             );

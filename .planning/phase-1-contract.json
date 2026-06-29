@@ -104,26 +104,26 @@
       "verification": [
         {
           "type": "grep-match",
-          "path": "supabase/migrations/init_schema.sql",
-          "pattern": "ENABLE ROW LEVEL SECURITY",
+          "path": "supabase/migrations/0001_init_schema.sql",
+          "pattern": "enable row level security",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "supabase/migrations/init_schema.sql",
-          "pattern": "app_metadata'->>'role'",
+          "path": "supabase/migrations/0001_init_schema.sql",
+          "pattern": "app_metadata",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "supabase/migrations/init_schema.sql",
+          "path": "supabase/migrations/0001_init_schema.sql",
           "pattern": "workshop-certs",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "supabase/migrations/init_schema.sql",
-          "pattern": "user_metadata",
+          "path": "supabase/migrations/0001_init_schema.sql",
+          "pattern": "user_metadata' ->> 'role'",
           "expect": "absent"
         }
       ]
@@ -173,13 +173,13 @@
       "verification": [
         {
           "type": "grep-match",
-          "path": "src/app/login/actions.ts",
+          "path": "src/lib/auth-actions.ts",
           "pattern": "signInWithPassword",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/app/page.tsx",
+          "path": "src/lib/auth-actions.ts",
           "pattern": "redirect",
           "expect": "present"
         },

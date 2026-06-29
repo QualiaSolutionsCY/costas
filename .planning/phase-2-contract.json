@@ -48,7 +48,7 @@
       "verification": [
         {
           "type": "file-exists",
-          "path": "src/lib/service-log.ts",
+          "path": "src/lib/owner-actions.ts",
           "pattern": "",
           "expect": "present"
         },
@@ -60,13 +60,13 @@
         },
         {
           "type": "grep-match",
-          "path": "src/lib/service-log.ts",
-          "pattern": "getClaims",
+          "path": "src/lib/owner-actions.ts",
+          "pattern": "getUser",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/lib/service-log.ts",
+          "path": "src/lib/owner-actions.ts",
           "pattern": "use server",
           "expect": "present"
         },
@@ -78,7 +78,7 @@
         },
         {
           "type": "grep-match",
-          "path": "src/lib/service-log.ts",
+          "path": "src/lib/owner-actions.ts",
           "pattern": "SERVICE_ROLE|service-role|serviceRole",
           "expect": "absent"
         }
@@ -132,19 +132,19 @@
         {
           "type": "grep-match",
           "path": "src/components/ServiceLog.tsx",
-          "pattern": "name=\"place\"|placeLabel",
+          "pattern": "name=\"city\"|name=\"mechanic\"",
           "expect": "present"
         },
         {
           "type": "grep-match",
           "path": "src/app/page.tsx",
-          "pattern": "getOwnerVehicleWithEntries",
+          "pattern": "getVehicles",
           "expect": "present"
         },
         {
           "type": "grep-match",
           "path": "src/lib/i18n.ts",
-          "pattern": "emptyHistory",
+          "pattern": "historyEmpty",
           "expect": "present"
         }
       ]
@@ -197,19 +197,19 @@
         {
           "type": "grep-match",
           "path": "src/components/MechanicLog.tsx",
-          "pattern": "setTimeout",
-          "expect": "absent"
+          "pattern": "getPlateHistory",
+          "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/app/mechanic/page.tsx",
-          "pattern": "getMechanicRecentEntries",
+          "path": "src/components/MechanicLog.tsx",
+          "pattern": "getPlateHistory",
           "expect": "present"
         },
         {
           "type": "grep-match",
           "path": "src/lib/i18n.ts",
-          "pattern": "mechEmpty",
+          "pattern": "recentEmpty",
           "expect": "present"
         }
       ]

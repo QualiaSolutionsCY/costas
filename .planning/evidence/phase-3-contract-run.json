@@ -1,0 +1,77 @@
+{
+  "ok": true,
+  "phase": 3,
+  "goal": "Registration stops being a no-op — it persists a workshop row tied to the signed-in mechanic and stores the certificate in the private workshop-certs bucket, with the path saved to workshops.cert_path and the success screen reflecting the persisted values.",
+  "checked": 8,
+  "failed": 0,
+  "generated_at": "2026-06-29T12:16:33.071Z",
+  "results": [
+    {
+      "task_id": "T1",
+      "task_title": "Registration server action: validate, upload cert, persist workshop",
+      "index": 0,
+      "type": "file-exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T1",
+      "task_title": "Registration server action: validate, upload cert, persist workshop",
+      "index": 1,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T1",
+      "task_title": "Registration server action: validate, upload cert, persist workshop",
+      "index": 2,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T1",
+      "task_title": "Registration server action: validate, upload cert, persist workshop",
+      "index": 3,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T2",
+      "task_title": "Wire RegisterForm to the action: real submit, persisted success screen, bilingual states",
+      "index": 0,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T2",
+      "task_title": "Wire RegisterForm to the action: real submit, persisted success screen, bilingual states",
+      "index": 1,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T2",
+      "task_title": "Wire RegisterForm to the action: real submit, persisted success screen, bilingual states",
+      "index": 2,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T2",
+      "task_title": "Wire RegisterForm to the action: real submit, persisted success screen, bilingual states",
+      "index": 3,
+      "type": "command-exit",
+      "ok": true,
+      "detail": "",
+      "duration_ms": 1430,
+      "stdout": "",
+      "stderr": ""
+    }
+  ]
+}

@@ -42,25 +42,25 @@
       "verification": [
         {
           "type": "file-exists",
-          "path": "src/lib/actions/register.ts",
+          "path": "src/lib/register-actions.ts",
           "pattern": "test -f",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/lib/actions/register.ts",
+          "path": "src/lib/register-actions.ts",
           "pattern": "createSignedUrl|upsert: true|getClaims|getUser",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/lib/actions/register.ts",
+          "path": "src/lib/register-actions.ts",
           "pattern": "service_role|SERVICE_ROLE|lib/supabase/client",
           "expect": "absent"
         },
         {
           "type": "grep-match",
-          "path": "src/lib/actions/register.ts",
+          "path": "src/lib/register-actions.ts",
           "pattern": "file.size|file.type|application/pdf",
           "expect": "present"
         }

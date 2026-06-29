@@ -1,0 +1,106 @@
+{
+  "ok": true,
+  "phase": 1,
+  "goal": "The app talks to a real Supabase project with RLS on from the first migration, and a user can sign in as an owner or a mechanic.",
+  "checked": 12,
+  "failed": 0,
+  "generated_at": "2026-06-29T12:16:31.456Z",
+  "results": [
+    {
+      "task_id": "T1",
+      "task_title": "Supabase clients + middleware session refresh + env wiring",
+      "index": 0,
+      "type": "file-exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T1",
+      "task_title": "Supabase clients + middleware session refresh + env wiring",
+      "index": 1,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T1",
+      "task_title": "Supabase clients + middleware session refresh + env wiring",
+      "index": 2,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T1",
+      "task_title": "Supabase clients + middleware session refresh + env wiring",
+      "index": 3,
+      "type": "file-exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T2",
+      "task_title": "Migration: schema + RLS on every table + workshop-certs Storage bucket",
+      "index": 0,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T2",
+      "task_title": "Migration: schema + RLS on every table + workshop-certs Storage bucket",
+      "index": 1,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T2",
+      "task_title": "Migration: schema + RLS on every table + workshop-certs Storage bucket",
+      "index": 2,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T2",
+      "task_title": "Migration: schema + RLS on every table + workshop-certs Storage bucket",
+      "index": 3,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Email/password auth: login/logout, role routing, seeded accounts, bilingual strings",
+      "index": 0,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Email/password auth: login/logout, role routing, seeded accounts, bilingual strings",
+      "index": 1,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Email/password auth: login/logout, role routing, seeded accounts, bilingual strings",
+      "index": 2,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T3",
+      "task_title": "Email/password auth: login/logout, role routing, seeded accounts, bilingual strings",
+      "index": 3,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

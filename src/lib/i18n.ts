@@ -130,6 +130,15 @@ export type Translation = {
   prefLanguageHint: string;
   settingsAbout: string;
   settingsAboutText: string;
+  // admin: workshop verification review
+  adminTitle: string;
+  adminSubtitle: string;
+  adminPending: (n: number) => string;
+  adminEmpty: string;
+  adminSerial: string;
+  adminRegistered: string;
+  adminCert: string;
+  adminNoCert: string;
 };
 
 export const translations: Record<Lang, Translation> = {
@@ -270,6 +279,14 @@ export const translations: Record<Lang, Translation> = {
     prefLanguageHint: "Η γλώσσα της εφαρμογής",
     settingsAbout: "Σχετικά",
     settingsAboutText: "Costas — δίγλωσσο βιβλίο σέρβις αυτοκινήτου για την Κύπρο.",
+    adminTitle: "Επαλήθευση Συνεργείων",
+    adminSubtitle: "Συνεργεία σε αναμονή έγκρισης.",
+    adminPending: (n) => `${n} σε αναμονή`,
+    adminEmpty: "Κανένα συνεργείο σε αναμονή",
+    adminSerial: "Σειριακός",
+    adminRegistered: "Εγγραφή",
+    adminCert: "Προβολή πιστοποιητικού",
+    adminNoCert: "Χωρίς πιστοποιητικό",
   },
   en: {
     tagline: "Service Log",
@@ -408,5 +425,13 @@ export const translations: Record<Lang, Translation> = {
     prefLanguageHint: "The app's language",
     settingsAbout: "About",
     settingsAboutText: "Costas — a bilingual car service log for Cyprus.",
+    adminTitle: "Workshop Verification",
+    adminSubtitle: "Workshops awaiting approval.",
+    adminPending: (n) => `${n} pending`,
+    adminEmpty: "No workshops pending review",
+    adminSerial: "Serial",
+    adminRegistered: "Registered",
+    adminCert: "View certificate",
+    adminNoCert: "No certificate",
   },
 };

@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { workshop, type WorkLog } from "@/lib/data";
+import { useActionState, useEffect, useRef, useState } from "react";
+import { workshop } from "@/lib/data";
 import { Icon } from "./icons";
 import Link from "next/link";
 import { useLang } from "./LanguageProvider";
 import { LanguageToggle } from "./LanguageToggle";
 import { ServiceSelect } from "./ServiceSelect";
-import { useInitialLoad } from "@/lib/useInitialLoad";
-import { RowSkeleton } from "./Skeleton";
+import { serviceCodeFromIndex, localizeServiceCode } from "@/lib/services";
+import { logMechanicJob, type JobState, type MechanicEntry } from "@/lib/mechanic-actions";
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -19,30 +19,32 @@ function formatDate(iso: string) {
   return d && m && y ? `${d}/${m}/${y}` : iso;
 }
 
-export function MechanicLog() {
+const initialState: JobState = { ok: false, error: null };
+
+export function MechanicLog({ initialEntries }: { initialEntries: MechanicEntry[] }) {
   const { t } = useLang();
-  const loading = useInitialLoad();
-  const [added, setAdded] = useState<WorkLog[]>([]);
-  const [plate, setPlate] = useState("");
+  const [state, formAction, isPending] = useActionState(logMechanicJob, initialState);
   const [serviceIdx, setServiceIdx] = useState(-1);
   const [date, setDate] = useState(todayISO);
-  const [justAdded, setJustAdded] = useState<string | null>(null);
+  const [savedPlate, setSavedPlate] = useState<string | null>(null);
+  // The plate text at submit time, captured before the action runs so the
+  // success chip can echo it back even though the input is uncontrolled.
+  const pendingPlate = useRef("");
 
-  const seed: WorkLog[] = t.mechanicSeed.map((s, i) => ({ id: `seed-${i}`, ...s }));
-  const entries = [...added, ...seed].sort((a, b) => b.date.localeCompare(a.date));
-  const todayCount = entries.filter((e) => e.date === todayISO()).length;
+  const serviceCode = serviceCodeFromIndex(serviceIdx) ?? "";
+  const entries = initialEntries;
+  const todayCount = entries.filter((e) => e.serviced_on === todayISO()).length;
 
-  function addEntry(e: React.FormEvent) {
-    e.preventDefault();
-    const p = plate.trim().toUpperCase();
-    const w = serviceIdx >= 0 ? t.serviceOptions[serviceIdx] : "";
-    if (!p || !w) return;
-    setAdded((prev) => [{ id: String(Date.now()), date: date || todayISO(), plate: p, work: w }, ...prev]);
-    setPlate("");
+  // On a successful save, surface the confirmation chip and reset the picker.
+  // The revalidated server data already carries the new row into `entries`.
+  useEffect(() => {
+    if (!state.ok) return;
+    setSavedPlate(pendingPlate.current.trim().toUpperCase());
     setServiceIdx(-1);
-    setJustAdded(p);
-    setTimeout(() => setJustAdded(null), 2500);
-  }
+    setDate(todayISO());
+    const timer = setTimeout(() => setSavedPlate(null), 2500);
+    return () => clearTimeout(timer);
+  }, [state]);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:py-12">
@@ -70,16 +72,24 @@ export function MechanicLog() {
       </div>
 
       {/* Φόρμα καταγραφής */}
-      <form onSubmit={addEntry} className="mt-6 rounded-xl border bg-surface p-5">
+      <form
+        action={(formData) => {
+          pendingPlate.current = String(formData.get("plate") ?? "");
+          formAction(formData);
+        }}
+        className="mt-6 rounded-xl border bg-surface p-5"
+      >
         <h1 className="text-sm font-semibold">{t.recordTitle}</h1>
         <p className="mt-0.5 text-xs text-muted">{t.mechSubtitle}</p>
+
+        {/* Stable hidden value for the selected service code (-1 → empty). */}
+        <input type="hidden" name="service_code" value={serviceCode} />
 
         <div className="mt-4 space-y-2">
           <label className="block">
             <span className="mb-1 block text-xs font-medium text-muted">{t.plateLabel}</span>
             <input
-              value={plate}
-              onChange={(e) => setPlate(e.target.value)}
+              name="plate"
               placeholder={t.platePlaceholder}
               className="w-full rounded-lg border bg-surface-2 px-3 py-2.5 text-sm uppercase tracking-wider outline-none placeholder:normal-case placeholder:tracking-normal placeholder:text-muted focus:border-foreground focus:bg-surface"
             />
@@ -98,6 +108,7 @@ export function MechanicLog() {
               <span className="mb-1 block text-xs font-medium text-muted">{t.dateLabel}</span>
               <input
                 type="date"
+                name="serviced_on"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 className="rounded-lg border bg-surface-2 px-3 py-2.5 text-sm text-muted outline-none focus:border-foreground focus:bg-surface"
@@ -108,16 +119,26 @@ export function MechanicLog() {
 
         <button
           type="submit"
-          disabled={!plate.trim() || serviceIdx < 0}
+          disabled={isPending || serviceIdx < 0}
           className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-surface transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          <Icon name="plus" className="h-4 w-4" />
+          {isPending ? <Icon name="spinner" className="h-4 w-4" /> : <Icon name="plus" className="h-4 w-4" />}
           {t.mechRecordBtn}
         </button>
 
-        {justAdded && (
+        {state.ok && savedPlate && (
           <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-positive/10 px-3 py-1.5 text-xs font-medium text-positive">
-            <Icon name="shield" className="h-3.5 w-3.5" /> {t.recordedTo(justAdded)}
+            <Icon name="shield" className="h-3.5 w-3.5" /> {t.recordedTo(savedPlate)}
+          </p>
+        )}
+        {state.error === "plate" && (
+          <p role="alert" className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-negative/10 px-3 py-1.5 text-xs font-medium text-negative">
+            {t.errPlate}
+          </p>
+        )}
+        {state.error && state.error !== "plate" && (
+          <p role="alert" className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-negative/10 px-3 py-1.5 text-xs font-medium text-negative">
+            {t.errSave}
           </p>
         )}
       </form>
@@ -125,16 +146,12 @@ export function MechanicLog() {
       {/* Πρόσφατες καταγραφές */}
       <div className="mt-8 flex items-center gap-2 px-1">
         <h2 className="text-sm font-semibold">{t.recentTitle}</h2>
-        {!loading && (
-          <span className="inline-flex items-center rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-medium tabular-nums text-accent">
-            {t.jobsToday(todayCount)}
-          </span>
-        )}
+        <span className="inline-flex items-center rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-medium tabular-nums text-accent">
+          {t.jobsToday(todayCount)}
+        </span>
       </div>
 
-      {loading ? (
-        <RowSkeleton />
-      ) : entries.length === 0 ? (
+      {entries.length === 0 ? (
         <div className="mt-3 grid place-items-center rounded-xl border border-dashed bg-surface py-12 text-center">
           <Icon name="wrench" className="h-7 w-7 text-muted" />
           <p className="mt-3 text-sm font-medium">{t.recentEmpty}</p>
@@ -147,10 +164,10 @@ export function MechanicLog() {
                 <Icon name="wrench" className="h-4 w-4" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{entry.work}</p>
+                <p className="truncate text-sm font-medium">{localizeServiceCode(entry.service_code, t.serviceOptions)}</p>
                 <p className="font-mono text-[11px] tracking-wider text-muted">{entry.plate}</p>
               </div>
-              <span className="shrink-0 text-xs tabular-nums text-muted">{formatDate(entry.date)}</span>
+              <span className="shrink-0 text-xs tabular-nums text-muted">{formatDate(entry.serviced_on)}</span>
             </li>
           ))}
         </ul>

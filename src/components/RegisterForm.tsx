@@ -1,7 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useActionState, useRef, useState } from "react";
+import { useFormStatus } from "react-dom";
 import { workshop } from "@/lib/data";
+import { registerWorkshop, type RegisterState } from "@/lib/register-actions";
 import { Icon } from "./icons";
 import { useLang } from "./LanguageProvider";
 import { LanguageToggle } from "./LanguageToggle";
@@ -12,19 +14,44 @@ function fileSize(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
+const initialState: RegisterState = { ok: false, error: null };
+
+// useFormStatus reads the enclosing <form>'s pending state — must be a child of
+// the form, hence a dedicated component rather than inline JSX.
+function SubmitButton({ disabled }: { disabled: boolean }) {
+  const { t } = useLang();
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={disabled || pending}
+      className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-surface transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      {pending && <Icon name="spinner" className="h-4 w-4" />}
+      {pending ? t.submitting : t.submitReg}
+    </button>
+  );
+}
+
 export function RegisterForm() {
   const { t } = useLang();
+  const [state, formAction] = useActionState(registerWorkshop, initialState);
   const [name, setName] = useState("");
   const [serial, setSerial] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function setSelected(f: File | null) {
     if (preview) URL.revokeObjectURL(preview);
+    // Drive the real form input so the File reaches the server action. Drag-drop
+    // and the file chip both flow through this single source of truth.
+    if (inputRef.current) {
+      const dt = new DataTransfer();
+      if (f) dt.items.add(f);
+      inputRef.current.files = dt.files;
+    }
     setFile(f);
     setPreview(f && f.type.startsWith("image/") ? URL.createObjectURL(f) : null);
   }
@@ -36,27 +63,15 @@ export function RegisterForm() {
     if (f) setSelected(f);
   }
 
-  const valid = name.trim() && serial.trim() && file;
-
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!valid || submitting) return;
-    // Simulated submit — Phase 3 swaps this for the real upload + insert action.
-    setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      setSubmitted(true);
-    }, 800);
-  }
-
   function reset() {
     setSelected(null);
     setName("");
     setSerial("");
-    setSubmitted(false);
   }
 
-  if (submitted) {
+  const valid = name.trim() && serial.trim() && file;
+
+  if (state.ok) {
     return (
       <div className="mx-auto max-w-md px-4 py-16 text-center">
         <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-positive/12 text-positive">
@@ -65,14 +80,26 @@ export function RegisterForm() {
         <h1 className="mt-4 text-lg font-semibold tracking-tight">{t.regDone}</h1>
         <p className="mt-1 text-sm text-muted">{t.regDoneSub}</p>
         <div className="mt-6 rounded-xl border bg-surface p-4 text-left text-sm">
-          <div className="flex justify-between gap-3 border-b py-1.5"><span className="text-muted">{t.nameLabel}</span><span className="font-medium">{name}</span></div>
+          <div className="flex justify-between gap-3 border-b py-1.5"><span className="text-muted">{t.nameLabel}</span><span className="font-medium">{state.name}</span></div>
           <div className="flex justify-between gap-3 border-b py-1.5"><span className="text-muted">{t.shopDefaultLabel}</span><span className="font-medium">{workshop.name}</span></div>
-          <div className="flex justify-between gap-3 border-b py-1.5"><span className="text-muted">{t.serialLabel}</span><span className="font-mono font-medium">{serial}</span></div>
-          <div className="flex justify-between gap-3 py-1.5"><span className="text-muted">{t.certLabel}</span><span className="truncate font-medium">{file?.name}</span></div>
+          <div className="flex justify-between gap-3 py-1.5"><span className="text-muted">{t.serialLabel}</span><span className="font-mono font-medium">{state.serial}</span></div>
         </div>
-        <button onClick={reset} className="mt-5 rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-surface-2">
-          {t.registerAnother}
-        </button>
+        {state.certUrl && (
+          <a
+            href={state.certUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-5 inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-surface transition-opacity hover:opacity-90"
+          >
+            <Icon name="file" className="h-4 w-4" />
+            {t.viewCert}
+          </a>
+        )}
+        <div>
+          <button onClick={reset} className="mt-3 rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-surface-2">
+            {t.registerAnother}
+          </button>
+        </div>
       </div>
     );
   }
@@ -88,11 +115,12 @@ export function RegisterForm() {
         <div className="ml-auto"><LanguageToggle /></div>
       </div>
 
-      <form onSubmit={submit} className="mt-6 space-y-4 rounded-xl border bg-surface p-5">
+      <form action={formAction} className="mt-6 space-y-4 rounded-xl border bg-surface p-5">
         {/* Όνομα */}
         <label className="block">
           <span className="mb-1 block text-xs font-medium text-muted">{t.nameLabel}</span>
           <input
+            name="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={t.namePlaceholder}
@@ -113,6 +141,7 @@ export function RegisterForm() {
         <label className="block">
           <span className="mb-1 block text-xs font-medium text-muted">{t.serialLabel}</span>
           <input
+            name="serial"
             value={serial}
             onChange={(e) => setSerial(e.target.value)}
             placeholder={t.serialPlaceholder}
@@ -126,7 +155,8 @@ export function RegisterForm() {
           <input
             ref={inputRef}
             type="file"
-            accept="image/*,application/pdf"
+            name="cert"
+            accept="image/png,image/jpeg,application/pdf"
             className="hidden"
             onChange={(e) => setSelected(e.target.files?.[0] ?? null)}
           />
@@ -167,14 +197,11 @@ export function RegisterForm() {
           )}
         </div>
 
-        <button
-          type="submit"
-          disabled={!valid || submitting}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-surface transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {submitting && <Icon name="spinner" className="h-4 w-4" />}
-          {submitting ? t.submitting : t.submitReg}
-        </button>
+        {state.error && (
+          <p className="text-xs font-medium text-negative">{t.errSave}</p>
+        )}
+
+        <SubmitButton disabled={!valid} />
       </form>
     </div>
   );

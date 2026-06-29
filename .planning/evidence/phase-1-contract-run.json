@@ -1,30 +1,30 @@
 {
   "ok": true,
   "phase": 1,
-  "goal": "Any visitor can register as an owner with email+password; existing users can request a reset email and set a new password via the link; signed-in users can change their password — all bilingual EL/EN, integrated into the existing auth pattern.",
-  "checked": 13,
+  "goal": "Every M2–M5 surface passes the design quality bar — all interactive elements have loading/empty/error/confirm states, layouts hold at 375px and 1440px, a11y is clean, and EL/EN copy is complete with no missing keys or English leak in Greek mode.",
+  "checked": 9,
   "failed": 0,
-  "generated_at": "2026-06-29T14:54:43.796Z",
+  "generated_at": "2026-06-29T17:18:16.626Z",
   "results": [
     {
       "task_id": "T1",
-      "task_title": "Signup role+confirm trigger migration",
+      "task_title": "Booking surfaces: add missing error feedback + canonical date format",
       "index": 0,
-      "type": "file-exists",
-      "ok": true,
-      "detail": ""
-    },
-    {
-      "task_id": "T1",
-      "task_title": "Signup role+confirm trigger migration",
-      "index": 1,
       "type": "grep-match",
       "ok": true,
       "detail": ""
     },
     {
       "task_id": "T1",
-      "task_title": "Signup role+confirm trigger migration",
+      "task_title": "Booking surfaces: add missing error feedback + canonical date format",
+      "index": 1,
+      "type": "grep-match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "task_id": "T1",
+      "task_title": "Booking surfaces: add missing error feedback + canonical date format",
       "index": 2,
       "type": "grep-match",
       "ok": true,
@@ -32,7 +32,7 @@
     },
     {
       "task_id": "T2",
-      "task_title": "Auth lifecycle server actions (signUp, resetPassword, changePassword)",
+      "task_title": "Reminder surfaces: add error states to prefs save + reminder dismiss",
       "index": 0,
       "type": "grep-match",
       "ok": true,
@@ -40,7 +40,7 @@
     },
     {
       "task_id": "T2",
-      "task_title": "Auth lifecycle server actions (signUp, resetPassword, changePassword)",
+      "task_title": "Reminder surfaces: add error states to prefs save + reminder dismiss",
       "index": 1,
       "type": "grep-match",
       "ok": true,
@@ -48,7 +48,7 @@
     },
     {
       "task_id": "T2",
-      "task_title": "Auth lifecycle server actions (signUp, resetPassword, changePassword)",
+      "task_title": "Reminder surfaces: add error states to prefs save + reminder dismiss",
       "index": 2,
       "type": "grep-match",
       "ok": true,
@@ -56,18 +56,15 @@
     },
     {
       "task_id": "T3",
-      "task_title": "Signup + forgot-password pages and i18n keys",
+      "task_title": "Admin review: surface failures from optimistic approve/reject",
       "index": 0,
-      "type": "command-exit",
+      "type": "grep-match",
       "ok": true,
-      "detail": "",
-      "duration_ms": 1638,
-      "stdout": "",
-      "stderr": ""
+      "detail": ""
     },
     {
       "task_id": "T3",
-      "task_title": "Signup + forgot-password pages and i18n keys",
+      "task_title": "Admin review: surface failures from optimistic approve/reject",
       "index": 1,
       "type": "grep-match",
       "ok": true,
@@ -75,46 +72,11 @@
     },
     {
       "task_id": "T3",
-      "task_title": "Signup + forgot-password pages and i18n keys",
+      "task_title": "Admin review: surface failures from optimistic approve/reject",
       "index": 2,
       "type": "grep-match",
       "ok": true,
       "detail": ""
-    },
-    {
-      "task_id": "T3",
-      "task_title": "Signup + forgot-password pages and i18n keys",
-      "index": 3,
-      "type": "grep-match",
-      "ok": true,
-      "detail": ""
-    },
-    {
-      "task_id": "T4",
-      "task_title": "Reset-password completion route",
-      "index": 0,
-      "type": "grep-match",
-      "ok": true,
-      "detail": ""
-    },
-    {
-      "task_id": "T4",
-      "task_title": "Reset-password completion route",
-      "index": 1,
-      "type": "grep-match",
-      "ok": true,
-      "detail": ""
-    },
-    {
-      "task_id": "T4",
-      "task_title": "Reset-password completion route",
-      "index": 2,
-      "type": "command-exit",
-      "ok": true,
-      "detail": "",
-      "duration_ms": 1485,
-      "stdout": "",
-      "stderr": ""
     }
   ]
 }

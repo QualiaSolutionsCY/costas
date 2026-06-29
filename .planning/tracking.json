@@ -58,35 +58,38 @@
       "closed_at": "2026-06-29T15:29:33.231Z"
     }
   ],
-  "phase": 1,
-  "phase_name": "Polish",
+  "phase": 2,
+  "phase_name": "Content + SEO",
   "total_phases": 4,
   "status": "setup",
   "profile": "strict",
   "lifecycle": "build",
   "launched_at": "",
   "launch_source": "",
-  "wave": 0,
+  "wave": 1,
   "tasks_done": 0,
   "tasks_total": 0,
   "verification": "pending",
-  "gap_cycles": {},
+  "gap_cycles": {
+    "1": 0
+  },
   "blockers": [],
   "session_started_at": "2026-06-29T16:50:32.254Z",
-  "last_updated": "2026-06-29T16:50:32.254Z",
+  "last_updated": "2026-06-29T17:18:31.448Z",
   "last_pushed_at": "",
   "last_commit": "",
-  "build_count": 7,
+  "build_count": 8,
   "deploy_count": 0,
   "deployed_url": "",
   "notes": "",
   "submitted_by": "",
   "lifetime": {
-    "tasks_completed": 0,
-    "phases_completed": 7,
+    "tasks_completed": 3,
+    "phases_completed": 8,
     "milestones_completed": 5,
     "total_phases": 12,
     "last_closed_milestone": 5,
     "updates_completed": 0
-  }
+  },
+  "report_seq": 0
 }

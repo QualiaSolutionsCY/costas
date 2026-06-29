@@ -1,210 +1,155 @@
 {
   "version": 1,
   "phase": 1,
-  "goal": "Any visitor can register as an owner with email+password; existing users can request a reset email and set a new password via the link; signed-in users can change their password — all bilingual EL/EN, integrated into the existing auth pattern.",
-  "why": "Replaces the seeded-account assumption with a real self-service lifecycle — the credibility line for the sales demo. Constraint: no service-role key, so admin.* APIs are forbidden; signup role is stamped by a DB trigger.",
-  "generated_at": "2026-06-29T14:42:23Z",
+  "goal": "Every M2–M5 surface passes the design quality bar — all interactive elements have loading/empty/error/confirm states, layouts hold at 375px and 1440px, a11y is clean, and EL/EN copy is complete with no missing keys or English leak in Greek mode.",
+  "why": "M4/M5 (booking, incoming bookings, reminders, admin review) were shipped via a fast parallel workflow — build-verified but not exhaustively polished. The audit found three real gap classes: data mutations that silently swallow failures, raw-ISO date display breaking visual consistency, and optimistic admin actions with no failure recovery.",
+  "generated_at": "2026-06-29T16:59:43Z",
   "generated_by": "planner",
-  "source_plan_hash": "sha256:2503b58b48ea1cb10da05103a052fe4bc23a337345d4e50e87ebfba0eb9d388d",
+  "source_plan_hash": "sha256:7260f7629c029b1e0c44118fb47f403b6ad6c86bcbace7731413f377ff21a241",
   "success_criteria": [
-    "/signup renders a bilingual email/password/confirm form; a valid submit creates an auto-confirmed user with app_metadata.role = 'owner' via the Task-1 trigger and redirects to /.",
-    "A duplicate-email signup returns an inline bilingual error; mismatched passwords are caught before submission.",
-    "/forgot-password submits a registered email, calls resetPasswordForEmail server-side, and shows a bilingual check-your-inbox confirmation.",
-    "/auth/reset-password?code=… exchanges the code, lets the user set a new password via changePassword, and redirects to /login.",
-    "changePassword exists in account-actions.ts and calls updateUser({ password }) with the current session — no service-role admin call anywhere.",
-    "npx tsc --noEmit exits 0 (proves every new i18n key has EL+EN parity); no TODO/FIXME in touched files."
+    "Every interactive M4/M5 mutation surface renders an error state on failure (booking, reminder prefs + dismiss, admin approve/reject) — verified by inspection.",
+    "requested_date renders as dd/mm/yyyy on /book and /bookings, matching ServiceLog/MechanicLog/RemindersList.",
+    "EL/EN string parity holds at 218/218 (no new keys added); Translation type unchanged.",
+    "npx tsc --noEmit exits 0; no TODO/FIXME introduced in touched files.",
+    "No raw hex / non-semantic colors introduced in any touched component.",
+    "No layout break at 375px or 1440px on any M2–M5 route — pre-satisfied per audit; guarded by the no-fixed-pixel-width regression check."
   ],
   "tasks": [
     {
       "id": "T1",
-      "title": "Signup role+confirm trigger migration",
+      "title": "Booking surfaces: add missing error feedback + canonical date format",
       "wave": 1,
       "depends_on": [],
-      "persona": "backend",
-      "files_modify": [],
-      "files_create": [
-        "supabase/migrations/0007_signup_role_trigger.sql"
+      "persona": "frontend",
+      "files_modify": [
+        "src/components/BookingForm.tsx",
+        "src/components/IncomingBookings.tsx"
       ],
+      "files_create": [],
       "files_delete": [],
       "acceptance_criteria": [
-        "An auth.users email-provider row with no role in raw_app_meta_data ends up with raw_app_meta_data->>'role' = 'owner'.",
-        "The same row has email_confirmed_at set (non-null) so the new user can sign in immediately.",
-        "Only email-provider rows are touched and an existing role is never overwritten (admin/mechanic seeds unaffected)."
+        "Owner 'My bookings' list shows requested_date as dd/mm/yyyy, not raw ISO.",
+        "Workshop incoming-bookings list shows requested_date as dd/mm/yyyy.",
+        "A booking with a note shows that note in the owner's My bookings row.",
+        "No new i18n keys; el/en stays 218/218; tsc passes."
       ],
-      "action": "Create SECURITY DEFINER function public.stamp_signup_owner_role(): when raw_app_meta_data->>'role' is null, set new.raw_app_meta_data via jsonb_set merging provider:email and role:owner, set new.email_confirmed_at := coalesce(new.email_confirmed_at, now()), return new. Attach as a BEFORE INSERT trigger on auth.users so it runs before on_auth_user_created. Operator applies via Supabase MCP after merge; builder writes the .sql only.",
+      "action": "Add a local formatDate(iso) helper (identical to RemindersList.tsx:10-13) to BookingForm.tsx and IncomingBookings.tsx; apply at BookingForm.tsx:205 (b.requested_date) and IncomingBookings.tsx:102 (booking.requested_date), inside the existing truthy guards. In BookingForm.tsx My-bookings li, add a text-muted note line {b.note ? ... : null}. No new i18n keys; semantic tokens only.",
       "context_files": [
-        "supabase/migrations/0001_init_schema.sql",
-        "supabase/migrations/0003_allow_admin_role.sql"
+        "src/components/BookingForm.tsx",
+        "src/components/IncomingBookings.tsx",
+        "src/components/RemindersList.tsx",
+        ".planning/DESIGN.md"
       ],
       "verification": [
         {
-          "type": "file-exists",
-          "path": "supabase/migrations/0007_signup_role_trigger.sql",
+          "type": "grep-match",
+          "path": "src/components/BookingForm.tsx",
+          "pattern": "formatDate\\(b\\.requested_date\\)",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "supabase/migrations/0007_signup_role_trigger.sql",
-          "pattern": "before insert on auth.users",
+          "path": "src/components/IncomingBookings.tsx",
+          "pattern": "formatDate\\(booking\\.requested_date\\)",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "supabase/migrations/0007_signup_role_trigger.sql",
-          "pattern": "email_confirmed_at",
+          "path": "src/components/BookingForm.tsx",
+          "pattern": "b.note",
           "expect": "present"
         }
       ]
     },
     {
       "id": "T2",
-      "title": "Auth lifecycle server actions (signUp, resetPassword, changePassword)",
+      "title": "Reminder surfaces: add error states to prefs save + reminder dismiss",
       "wave": 1,
       "depends_on": [],
-      "persona": "backend",
-      "files_modify": [],
-      "files_create": [
-        "src/lib/account-actions.ts"
+      "persona": "frontend",
+      "files_modify": [
+        "src/components/ReminderPrefs.tsx",
+        "src/components/RemindersList.tsx"
       ],
+      "files_create": [],
       "files_delete": [],
       "acceptance_criteria": [
-        "signUp validates email+password(min 8)+confirm-match server-side; duplicate email returns { error: 'exists' }; success redirects to /.",
-        "requestPasswordReset validates email and calls resetPasswordForEmail with redirectTo /auth/reset-password; returns { sent: true } on a valid-format email without account enumeration.",
-        "changePassword validates new password (min 8)+confirm, calls updateUser({ password }) with the current session, returns { ok: true } or a mapped error."
+        "Reminder-prefs save failure shows a text-negative error; success still shows reminderPrefsSaved.",
+        "Reminder dismiss failure shows a text-negative error instead of silently doing nothing.",
+        "No new i18n keys: reuse t.errSave; el/en stays 218/218."
       ],
-      "action": "Create a 'use server' module mirroring auth-actions.ts (Zod parse, await createClient, useActionState state shape, redirect outside try/catch). Export SignUpState, ResetRequestState, ChangePasswordState + initial consts. signUp uses supabase.auth.signUp, mapping user_already_exists to error exists. requestPasswordReset calls resetPasswordForEmail with redirectTo origin+/auth/reset-password. changePassword checks getUser then updateUser. No supabase.auth.admin anywhere.",
+      "action": "In ReminderPrefs.tsx add an error branch after the state.ok block reusing the SettingsClient.tsx:131-138 ok/error pattern (t.errSave). In RemindersList.tsx change const [, action, pending] to capture state and render an inline t.errSave error on failure, matching IncomingBookings.tsx:242-246. If widening returned state to carry error, update the server-action failure/success branches accordingly (not i18n strings). Do not alter revalidatePath calls.",
       "context_files": [
-        "src/lib/auth-actions.ts",
-        "src/lib/supabase/server.ts"
+        "src/components/ReminderPrefs.tsx",
+        "src/components/RemindersList.tsx",
+        "src/lib/reminder-prefs-actions.ts",
+        "src/lib/notification-actions.ts",
+        "src/components/SettingsClient.tsx",
+        "src/components/IncomingBookings.tsx",
+        ".planning/DESIGN.md"
       ],
       "verification": [
         {
           "type": "grep-match",
-          "path": "src/lib/account-actions.ts",
-          "pattern": "resetPasswordForEmail",
+          "path": "src/components/ReminderPrefs.tsx",
+          "pattern": "text-negative",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/lib/account-actions.ts",
-          "pattern": "updateUser",
+          "path": "src/components/RemindersList.tsx",
+          "pattern": "text-negative",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/lib/account-actions.ts",
-          "pattern": "auth.admin",
-          "expect": "absent"
+          "path": "src/components/ReminderPrefs.tsx",
+          "pattern": "t.errSave",
+          "expect": "present"
         }
       ]
     },
     {
       "id": "T3",
-      "title": "Signup + forgot-password pages and i18n keys",
-      "wave": 2,
-      "depends_on": [
-        "T2"
-      ],
+      "title": "Admin review: surface failures from optimistic approve/reject",
+      "wave": 1,
+      "depends_on": [],
       "persona": "frontend",
       "files_modify": [
-        "src/lib/i18n.ts"
+        "src/components/AdminReviewList.tsx"
       ],
-      "files_create": [
+      "files_create": [],
+      "files_delete": [],
+      "acceptance_criteria": [
+        "approveWorkshop/rejectWorkshop returning {ok:false} shows a text-negative role=alert banner reusing t.errSave.",
+        "Success path unchanged: row removed and revalidated list reconciles.",
+        "No new i18n keys; el/en stays 218/218."
+      ],
+      "action": "Add useState actionError to AdminReviewList.tsx. In onApprove and onConfirmReject, capture the action promise result via .then((res)=>{ if(res && !res.ok) setActionError(true); }) and reset setActionError(false) at the start of each. Render a role=alert bg-negative/10 text-negative banner near the header (signup/page.tsx:94-101 shape) reusing t.errSave. Keep useOptimistic reconciliation intact.",
+      "context_files": [
+        "src/components/AdminReviewList.tsx",
+        "src/lib/admin-actions.ts",
         "src/app/signup/page.tsx",
-        "src/app/forgot-password/page.tsx"
-      ],
-      "files_delete": [],
-      "acceptance_criteria": [
-        "/signup renders a bilingual email/password/confirm card styled like /login; mismatched passwords caught client-side; duplicate-email shows inline bilingual error; valid submit redirects to /.",
-        "/forgot-password renders a single bilingual email field and shows a bilingual confirmation driven by state.sent after submit.",
-        "Both pages show LanguageToggle and a link back to /login; /login gains Sign up and Forgot password links.",
-        "npx tsc --noEmit passes, proving every new t.* key exists in both el and en."
-      ],
-      "action": "Add the ~20 auth-lifecycle i18n keys (signup, forgot-password, and T4's reset-completion strings — full list in phase-1-plan.md Task 3) to the Translation type and BOTH el and en dictionaries. Build src/app/signup/page.tsx ('use client', useActionState(signUp)) and src/app/forgot-password/page.tsx (useActionState(requestPasswordReset)) reusing the /login card classes and useLang. Add Sign up + Forgot password links to login/page.tsx using text-accent.",
-      "context_files": [
-        "src/app/login/page.tsx",
-        "src/lib/account-actions.ts",
-        "src/lib/i18n.ts",
-        ".planning/DESIGN.md"
-      ],
-      "verification": [
-        {
-          "type": "command-exit",
-          "command": "npx",
-          "args": [
-            "tsc",
-            "--noEmit"
-          ],
-          "expected_exit": 0
-        },
-        {
-          "type": "grep-match",
-          "path": "src/app/signup/page.tsx",
-          "pattern": "useActionState\\(signUp",
-          "expect": "present"
-        },
-        {
-          "type": "grep-match",
-          "path": "src/app/forgot-password/page.tsx",
-          "pattern": "requestPasswordReset",
-          "expect": "present"
-        },
-        {
-          "type": "grep-match",
-          "path": "src/app/login/page.tsx",
-          "pattern": "href=\"/signup\"",
-          "expect": "present"
-        }
-      ]
-    },
-    {
-      "id": "T4",
-      "title": "Reset-password completion route",
-      "wave": 3,
-      "depends_on": [
-        "T2",
-        "T3"
-      ],
-      "persona": "frontend",
-      "files_modify": [],
-      "files_create": [
-        "src/app/auth/reset-password/page.tsx"
-      ],
-      "files_delete": [],
-      "acceptance_criteria": [
-        "Visiting /auth/reset-password?code=<valid> exchanges the code server-side and renders a bilingual new-password form.",
-        "Submitting a valid matching password calls changePassword, succeeds, and redirects to /login.",
-        "A missing/invalid code shows a bilingual error with a back-to-login link instead of the form.",
-        "A weak password rejected by Supabase surfaces state.error === 'weak' as a bilingual inline message; mismatched passwords caught before submit."
-      ],
-      "action": "Async Server Component reads searchParams.code; if present, await createClient().auth.exchangeCodeForSession(code); on error render a bilingual invalid-link shell with a back link. On success render a 'use client' ResetPasswordForm using useActionState(changePassword) with new+confirm inputs and a mismatch guard; on state.ok router.push('/login') (keeps changePassword return-based for Phase 2). Reuse /login card classes and t.* strings; semantic tokens only.",
-      "context_files": [
-        "src/app/auth/callback/route.ts",
-        "src/lib/account-actions.ts",
-        "src/app/login/page.tsx",
         ".planning/DESIGN.md"
       ],
       "verification": [
         {
           "type": "grep-match",
-          "path": "src/app/auth/reset-password/page.tsx",
-          "pattern": "exchangeCodeForSession",
+          "path": "src/components/AdminReviewList.tsx",
+          "pattern": "setActionError",
           "expect": "present"
         },
         {
           "type": "grep-match",
-          "path": "src/app/auth/reset-password/page.tsx",
-          "pattern": "changePassword",
+          "path": "src/components/AdminReviewList.tsx",
+          "pattern": "role=\"alert\"",
           "expect": "present"
         },
         {
-          "type": "command-exit",
-          "command": "npx",
-          "args": [
-            "tsc",
-            "--noEmit"
-          ],
-          "expected_exit": 0
+          "type": "grep-match",
+          "path": "src/components/AdminReviewList.tsx",
+          "pattern": "t.errSave",
+          "expect": "present"
         }
       ]
     }

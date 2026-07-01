@@ -70,6 +70,8 @@ export type Translation = {
   signOut: string;
   loginError: string;
   demoHint: string;
+  emailHint: string;
+  passwordHint: string;
   // auth lifecycle: signup + forgot password
   signUpTitle: string;
   signUpSubtitle: string;
@@ -328,6 +330,8 @@ export const translations: Record<Lang, Translation> = {
     signOut: "Αποσύνδεση",
     loginError: "Λάθος email ή κωδικός.",
     demoHint: "Demo · owner@costas.demo ή mechanic@costas.demo · costas123",
+    emailHint: "Χρήστης: owner@costas.demo ή mechanic@costas.demo",
+    passwordHint: "Κωδικός: costas123",
     signUpTitle: "Εγγραφή",
     signUpSubtitle: "Δημιούργησε λογαριασμό οδηγού.",
     signUpBtn: "Εγγραφή",
@@ -569,6 +573,8 @@ export const translations: Record<Lang, Translation> = {
     signOut: "Sign out",
     loginError: "Wrong email or password.",
     demoHint: "Demo · owner@costas.demo or mechanic@costas.demo · costas123",
+    emailHint: "User: owner@costas.demo or mechanic@costas.demo",
+    passwordHint: "Password: costas123",
     signUpTitle: "Sign up",
     signUpSubtitle: "Create an owner account.",
     signUpBtn: "Sign up",

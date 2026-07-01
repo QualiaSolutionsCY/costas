@@ -38,6 +38,7 @@ export default function LoginPage() {
               required
               className="w-full rounded-lg border bg-surface-2 px-3 py-2.5 text-sm outline-none placeholder:text-muted focus:border-foreground focus:bg-surface"
             />
+            <span className="mt-1 block text-[11px] leading-snug text-muted">{t.emailHint}</span>
           </label>
 
           <label className="block">
@@ -49,6 +50,7 @@ export default function LoginPage() {
               required
               className="w-full rounded-lg border bg-surface-2 px-3 py-2.5 text-sm outline-none placeholder:text-muted focus:border-foreground focus:bg-surface"
             />
+            <span className="mt-1 block text-[11px] leading-snug text-muted">{t.passwordHint}</span>
           </label>
 
           {state.error && (

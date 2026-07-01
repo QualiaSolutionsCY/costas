@@ -77,6 +77,39 @@ body {
   }
 }
 
+/* Splash screen — entry animation played once per session before /login. */
+@keyframes splashIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes splashPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.35);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 14px rgba(79, 70, 229, 0);
+  }
+}
+
+@keyframes splashBar {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(420%);
+  }
+}
+
 /* Loading placeholder — neutral token sweep. Reused by every data-backed view
    while the real Supabase reads resolve (Phase 2). */
 .skeleton {

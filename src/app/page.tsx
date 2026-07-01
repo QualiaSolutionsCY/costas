@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/AppShell";
 import { ServiceLog } from "@/components/ServiceLog";
-import { FirstVisitGate } from "@/components/FirstVisitGate";
+import { SplashGate } from "@/components/SplashGate";
 import { getVehicles, getEntries } from "@/lib/owner-actions";
 import { getVerifiedWorkshopNames } from "@/lib/workshop-status";
 import { getReminderBadgeCount } from "@/lib/reminders";
@@ -35,7 +35,7 @@ export default async function Home({
 
   return (
     <>
-      <FirstVisitGate />
+      <SplashGate />
       <AppShell vehicles={vehicles} reminderCount={reminderCount}>
         <ServiceLog
           vehicles={vehicles}

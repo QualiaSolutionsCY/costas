@@ -20,7 +20,7 @@ export type CarPart = (typeof CAR_PARTS)[number];
 
 type PartLabels = Record<CarPart, string>;
 
-function usedPartLabels(): PartLabels {
+function usePartLabels(): PartLabels {
   const { t } = useLang();
   return {
     wheels: t.partWheels,
@@ -75,7 +75,7 @@ export function CarDiagram({
   selected: string[];
   onToggle: (part: string) => void;
 }) {
-  const labels = usedPartLabels();
+  const labels = usePartLabels();
   const has = (p: CarPart) => selected.includes(p);
 
   return (
